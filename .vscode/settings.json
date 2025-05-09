@@ -1,4 +1,6 @@
 {
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "standard",
     "cSpell.words": [
         "dotenv"
     ]
