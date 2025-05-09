@@ -78,7 +78,7 @@ def recommend(user_id, user_factors, item_factors, user_map, item_map, reverse_i
 # ------------------ MAIN ------------------
 
 if __name__ == "__main__":
-    behavior_path = "behaviorsS.tsv"  # Your path
+    behavior_path = "./data/behaviors.tsv"  # Your path
     user_id = "U13740"               # Example user
     num_recommendations = 5
 
