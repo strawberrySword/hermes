@@ -6,8 +6,7 @@ app = Flask(__name__)
 CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-import articles.controller
-import auth.controller
+import controller
 
 if __name__ == '__main__':
    app.run(port=5000, debug=True)

@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from articles.service import get_all_articles
 from __main__ import app
 
-@app.route('/articles/<page>', methods=['GET'])
+@app.route('/old/articles/<page>', methods=['GET'])
 def get_articles(page):
     print(page)
     res = jsonify({
