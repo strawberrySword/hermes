@@ -1,14 +1,28 @@
-import React from 'react'
-import { useInView } from 'react-intersection-observer'
-import {
-    useInfiniteQuery,
-} from '@tanstack/react-query'
+import React, { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useUser } from "../../hooks/useUser";
+import { Article, ArticleCard } from "./Article";
 
 export const Feed = () => {
-  const fetchProjects = async ({ pageParam }: {pageParam:number}) => {
-    const res = await fetch(`http://127.0.0.1:5000/articles/${pageParam}`)
-    return res.json()
-  }
+  const { user } = useUser();
+  const { ref: loadMoreRef, inView } = useInView();
+
+  const fetchProjects = async ({
+    pageParam,
+  }: {
+    pageParam: number;
+  }): Promise<{
+    data: Article[];
+    previousPage: number;
+    nextCursor: number;
+  }> => {
+    if (!user) {
+      throw new Error("User is not logged in");
+    }
+    const res = await fetch(`/api/articles/${user.user_id}/${pageParam}`);
+    return res.json();
+  };
 
   const {
     data,
@@ -19,38 +33,54 @@ export const Feed = () => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ['articles'],
+    queryKey: ["articles", user?.user_id],
     queryFn: fetchProjects,
     initialPageParam: 0,
-    getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
-  })
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled: !!user,
+  });
 
-  return status === 'pending' ? (
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
+
+  if (!user) {
+    // please log in message and url to login
+    return (
+      <div>
+        <h1>Please log in to view your feed</h1>
+        <a href="/login">Login</a>
+      </div>
+    );
+  }
+
+  return status === "pending" ? (
     <p>Loading...</p>
-  ) : status === 'error' ? (
+  ) : status === "error" ? (
     <p>Error: {error.message}</p>
   ) : (
     <>
       {data.pages.map((group, i) => (
         <React.Fragment key={i}>
-          {group.data.map((project) => (
-            <p key={project.id}>{project.title}</p>
+          {group.data.map((article) => (
+            <ArticleCard
+              key={article.article_id}
+              article={article}
+              userId={user.user_id}
+            />
           ))}
         </React.Fragment>
       ))}
-      <div>
-        <button
-          onClick={() => fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
-          {isFetchingNextPage
-            ? 'Loading more...'
-            : hasNextPage
-              ? 'Load More'
-              : 'Nothing more to load'}
-        </button>
+      <div ref={loadMoreRef}>
+        {isFetchingNextPage
+          ? "Loading more..."
+          : hasNextPage
+          ? "Scroll down to load more"
+          : "Nothing more to load"}
       </div>
-      <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
+      <div>{isFetching && !isFetchingNextPage ? "Fetching..." : null}</div>
     </>
-  )
-}
+  );
+};
