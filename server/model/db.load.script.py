@@ -51,6 +51,7 @@ def load_articles():
                         "topic", "title", "subtitle", "url"]
     articles = articles.drop_duplicates(subset=["article_id"])
     articles = articles.reset_index(drop=True)
+    articles = articles.where(pd.notnull(articles), "")
 
     # Convert the DataFrame to a list of dictionaries
     articles_dict = articles.to_dict(orient="records")
@@ -79,4 +80,5 @@ def load_action_history():
 
 if __name__ == "__main__":
     # load_users()
-    load_action_history()
+    # load_action_history()
+    load_articles()
