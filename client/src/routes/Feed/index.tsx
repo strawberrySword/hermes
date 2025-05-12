@@ -7,6 +7,7 @@ import { Article, ArticleCard } from "./Article";
 export const Feed = () => {
   const { user } = useUser();
   const { ref: loadMoreRef, inView } = useInView();
+  console.log("yayyy");
 
   const fetchProjects = async ({
     pageParam,
@@ -17,7 +18,6 @@ export const Feed = () => {
     previousPage: number;
     nextCursor: number;
   }> => {
-
     const res = await fetch(`/api/articles/${user?.user_id}/${pageParam}`);
     return res.json();
   };
