@@ -1,7 +1,7 @@
 from db import user_collection
 
 
-def find_one(id):
+def find_one(id: str):
     """
     Find one user by their id
     """
