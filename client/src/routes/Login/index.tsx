@@ -14,6 +14,8 @@ import Grid from "@mui/material/Grid";
 import { Google, Refresh } from "@mui/icons-material";
 import { useState } from "react";
 import { useUser } from "../../hooks/useUser";
+import { useNavigate } from "react-router";
+import { routes } from "../routes";
 
 export const Login = () => {
   const loginCardStyle = {
@@ -24,16 +26,27 @@ export const Login = () => {
 
   const [username, setUsername] = useState("");
   const [randomUsername, setRandomUsername] = useState("");
-
+  const navigate = useNavigate();
   const { login } = useUser();
 
   const handleLogin = async (username: string) => {
-    const isLoginSuccessful = await login(username);
+    const user = await login(username);
 
-    if (isLoginSuccessful) {
-      window.location.href = "/";
+    if (user) {
+      navigate(routes.MF);
     } else {
       console.error("Login failed");
+    }
+  };
+
+  const getRandomUsername = async () => {
+    const res = await fetch("/api/user/random");
+    if (res.ok) {
+      const data = await res.json();
+      const randomUser = data as { user_id: string };
+      setRandomUsername(randomUser.user_id);
+    } else {
+      console.error("Failed to fetch random username");
     }
   };
 
@@ -66,8 +79,8 @@ export const Login = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={async () => {
-                    await handleLogin(username);
+                  onClick={() => {
+                    handleLogin(username);
                   }}
                 >
                   login
@@ -82,13 +95,23 @@ export const Login = () => {
                 <Chip label={randomUsername} />
               </Grid>
               <Grid>
-                <Button variant="contained" color="primary">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={getRandomUsername}
+                >
                   <Typography>Resample</Typography>
                   <Refresh />
                 </Button>
               </Grid>
               <Grid>
-                <Button variant="contained" color="primary">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    handleLogin(randomUsername);
+                  }}
+                >
                   login
                 </Button>
               </Grid>

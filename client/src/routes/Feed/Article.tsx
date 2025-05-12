@@ -28,11 +28,11 @@ export const ArticleCard = ({
   userId,
 }: {
   article: Article;
-  userId: string;
+  userId: string | undefined;
 }) => {
   return (
     <Card
-      sx={{ maxWidth: 600, margin: "1rem auto", boxShadow: 3, borderRadius: 3 }}
+      sx={{ maxWidth: 800, margin: "1rem auto", boxShadow: 3, borderRadius: 3 }}
     >
       <CardHeader
         avatar={
