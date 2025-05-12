@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
-from articles.service import get_all_articles
+from articles.service import recommend
 from __main__ import app
 
-@app.route('/old/articles/<page>', methods=['GET'])
-def get_articles(page):
-    print(page)
+PAGE_SIZE = 10
+
+
+@app.route('/api/articles/<user_id>/<page>', methods=['GET'])
+def get_articles(user_id, page):
     res = jsonify({
-        'data': get_all_articles(),
+        'data': recommend(user_id, start=int(page) * PAGE_SIZE, end=(int(page) + 1) * PAGE_SIZE),
         'previousPage': max(int(page) - 1, 0),
         'nextCursor': int(page) + 1
-        })
-    
+    })
     return res

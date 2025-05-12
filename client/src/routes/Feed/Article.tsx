@@ -1,4 +1,3 @@
-// ArticleCard.tsx
 import {
   Card,
   CardContent,
@@ -64,8 +63,8 @@ export const ArticleCard = ({
           </a>
         </Box>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          <strong>Topic:</strong> {article.topic} | <strong>Genre:</strong>{" "}
-          {article.genre}
+          <strong>Genre:</strong> {article.genre} | <strong>Topic:</strong>{" "}
+          {article.topic}
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
