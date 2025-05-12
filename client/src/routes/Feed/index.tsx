@@ -17,10 +17,8 @@ export const Feed = () => {
     previousPage: number;
     nextCursor: number;
   }> => {
-    if (!user) {
-      throw new Error("User is not logged in");
-    }
-    const res = await fetch(`/api/articles/${user.user_id}/${pageParam}`);
+
+    const res = await fetch(`/api/articles/${user?.user_id}/${pageParam}`);
     return res.json();
   };
 

@@ -31,14 +31,9 @@ export const Login = () => {
     const isLoginSuccessful = await login(username);
 
     if (isLoginSuccessful) {
-      // Redirect to feed page using react-router
       window.location.href = "/";
     } else {
-      // Handle login failure: display error toast
-
       console.error("Login failed");
-      // You can use a toast library like react-toastify to show error messages
-      // toast.error("Login failed. Please try again.");
     }
   };
 
@@ -71,8 +66,8 @@ export const Login = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => {
-                    handleLogin(username);
+                  onClick={async () => {
+                    await handleLogin(username);
                   }}
                 >
                   login
