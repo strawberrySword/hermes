@@ -8,6 +8,9 @@ CORS(app)
 import auth.controller
 import articles.controller
 
+
+
+
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 
