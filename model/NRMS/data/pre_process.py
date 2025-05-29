@@ -6,6 +6,7 @@ from transformers import BertTokenizerFast
 from .dataloader import MindDataset, mind_collate_fn
 
 
+PAD_ID = 0
 
 def load_and_tokenize_news(
         news_path: str,
@@ -17,7 +18,7 @@ def load_and_tokenize_news(
     Truncate or keep at most max_len tokens. If a title is empty or missing,
     store [PAD_ID] so it becomes a single‐token “[PAD]”.
     """
-    news_dict: Dict[str, List[int]] = {}
+    news_dict = {}
     with open(news_path, encoding="utf-8") as f:
         for line in f:
             cols = line.strip().split('\t')

@@ -79,13 +79,13 @@ class NRMS(nn.Module):
 		clicked_flat_ids = clicked_token_ids.view(B * N, L)      # (B*N, L)
 		clicked_flat_mask = clicked_token_mask.view(B * N, L)    # (B*N, L)
 
-		clicked_emb_flat = self.news_encoder(clicked_flat_ids, clicked_flat_mask)
+		clicked_emb_flat = self.news_encoder(clicked_flat_ids, clicked_flat_mask)		
 		clicked_news_emb = clicked_emb_flat.view(B, N, self.d_embed)      # (B, N, d_embed)
 
 
 		# Embed article embeddings (lmfao attention again)
 		clicked_slot_mask = clicked_token_mask.all(dim=2)  # (B, N)
-
+	
 		user_emb = self.user_encoder(clicked_news_emb, clicked_slot_mask)  # (B, d_embed)
 
 
@@ -100,14 +100,3 @@ class NRMS(nn.Module):
 		scores = torch.bmm(candidate_emb, user_emb.unsqueeze(2)).squeeze(2)
 
 		return scores  # logits (B, K)
-
-
-
-
-
-		# We take scores as softmax(dot(usr_embed, candidates))
-		logits = torch.matmul(user_emb, all_doc_emb.t())  # (B, D)
-
-		scores = F.softmax(logits, dim=1)  # (B, D), softmax over all documents
-
-		return scores
