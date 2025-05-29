@@ -2,7 +2,8 @@ import torch
 import math
 import torch.nn as nn
 import torch.nn.functional as F
-from pos_encoding import SinePositionalEncoding
+
+from modules import SinePositionalEncoding
 
 class NewsEncoder(nn.Module):
     """
@@ -37,7 +38,7 @@ class NewsEncoder(nn.Module):
             activation="gelu",
             batch_first=True  # we are using (batch, seq, dim)
         )
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, n_layers=n_layers)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=n_layers)
 
         self.postnet = nn.Sequential(
             nn.Linear(d_embed, d_mlp),
