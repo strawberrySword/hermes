@@ -9,10 +9,9 @@ from typing import List, Dict
 from torch.optim.adamw import AdamW
 from tqdm import tqdm
 import math
-from torch_optimizer import AdamP
 from tqdm import tqdm
 from torch.utils.data import Dataset, DataLoader
-from transformers import BertTokenizerFast
+from transformers import BertTokenizerFast, get_linear_schedule_with_warmup
 from data import load_and_tokenize_news, load_behaviors, MindDataset, mind_collate_fn
 
 # %% [markdown]
@@ -94,7 +93,7 @@ def train(
 ):
     """
     Trains `model` using train_dataloader, evaluates on val_dataloader each epoch,
-    logs EWMA-smoothed loss + MRR to W&B, and finally saves model parameters.
+    logs EWMA-smoothed loss + MRR + learning rate to W&B, and finally saves model parameters.
     """
     model.to(device)
 
@@ -104,7 +103,7 @@ def train(
         config={
             "epochs": epochs,
             "learning_rate": lr,
-            "optimizer": "Adam",
+            "optimizer": "AdamW",
             "loss_fn": "CrossEntropyLoss",
             "metric": "MRR",
             "smoothing_alpha": smoothing_alpha,
@@ -114,12 +113,25 @@ def train(
     wandb.watch(model, log="parameters", log_freq=500)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = AdamW(model.parameters(),
-                      lr=lr,
-                      betas=(0.9, 0.999),
-                      eps=1e-8,
-                      weight_decay=1e-4
-                )
+    optimizer = AdamW(
+        model.parameters(),
+        lr=lr,
+        betas=(0.9, 0.999),
+        eps=1e-8,
+        weight_decay=1e-4
+    )
+
+    # === Scheduler Setup ===
+    # total_steps = epochs * number_of_batches_per_epoch
+    total_steps = epochs * len(train_dataloader)
+    warmup_steps = int(0.1 * total_steps)  # 10% warmup
+
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=warmup_steps,
+        num_training_steps=total_steps
+    )
+    # =======================
 
     step = 0  # global batch index
 
@@ -152,6 +164,7 @@ def train(
             loss = criterion(scores, labels)
             loss.backward()
             optimizer.step()
+            scheduler.step()  # <-- step the scheduler immediately after optimizer
 
             # Compute batch MRR
             with torch.no_grad():
@@ -181,12 +194,14 @@ def train(
             total_train_mrr += batch_mrr * batch_size
             total_train_samples += batch_size
 
-            # Log smoothed scalars to W&B every log_interval steps
+            # Log smoothed scalars (loss, MRR, lr) to W&B every log_interval steps
             if step % log_interval == 0:
+                current_lr = scheduler.get_last_lr()[0]
                 wandb.log(
                     {
                         "train/loss_EWMA": ewma_loss,
                         "train/MRR_EWMA": ewma_mrr,
+                        "train/lr": current_lr,
                         "epoch": epoch,
                     },
                     step=step,
@@ -279,11 +294,13 @@ train(
     model,
     train_dl,
     valid_dl,
-    epochs=5,
+    epochs=2,
     lr=1e-4,
     device="cuda" if torch.cuda.is_available() else "cpu",
     log_interval=100,
-    checkpoint_interval=2000,
+    checkpoint_interval=1000,
     project_name="NRMS",
     save_path="./checkpoints/"
 )
+
+

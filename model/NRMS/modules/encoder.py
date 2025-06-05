@@ -17,7 +17,7 @@ class NewsEncoder(nn.Module):
         self,
         vocab_size: int,
         d_embed: int = 768,           # e.g., 200‐d word embeddings
-        d_embed_news: int | None = None,         # e.g., 200‐d news embeddings
+        d_embed_news = None,         # e.g., 200‐d news embeddings
         n_heads: int = 12,
         d_mlp: int = 3072,             # hidden dim in the Transformer FFN
         n_layers: int = 1,
