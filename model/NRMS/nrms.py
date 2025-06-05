@@ -21,9 +21,12 @@ class NRMS(nn.Module):
 	def __init__(
 		self,
 		vocab_size: int,
-		d_embed: int = 768,
-		n_heads: int = 12,
-		d_mlp: int = 3072,
+		d_embed_word: int = 768,
+		d_embed_news: int = 768,
+		n_heads_news: int = 12,
+		n_heads_user: int = 12,
+		d_mlp_news: int = 3072,
+		d_mlp_user: int = 3072,
 		news_layers: int = 1,
 		user_layers: int = 1,
 		dropout: float = 0.1,
@@ -41,23 +44,25 @@ class NRMS(nn.Module):
 			pad_max_len: maximum sequence length for positional encoding
 		"""
 		super().__init__()
-		self.d_embed = d_embed
+		self.d_embed_word = d_embed_word
+		self.d_embed_news = d_embed_news
 
 		
 		self.news_encoder = NewsEncoder(
 			vocab_size=vocab_size,
-			d_embed=d_embed,
-			n_heads=n_heads,
-			d_mlp=d_mlp,
+			d_embed=d_embed_word,
+			d_embed_news=d_embed_news,
+			n_heads=n_heads_news,
+			d_mlp=d_mlp_news,
 			n_layers=news_layers,
 			dropout=dropout,
 			pad_max_len=pad_max_len,
 		)
 
 		self.user_encoder = UserEncoder(
-			d_embed=d_embed,
-			n_heads=n_heads,
-			d_mlp=d_mlp,
+			d_embed=d_embed_news,
+			n_heads=n_heads_user,
+			d_mlp=d_mlp_user,
 			n_layers=user_layers,
 			dropout=dropout,
 		)
@@ -80,13 +85,12 @@ class NRMS(nn.Module):
 		clicked_flat_mask = clicked_token_mask.view(B * N, L)    # (B*N, L)
 
 		clicked_emb_flat = self.news_encoder(clicked_flat_ids, clicked_flat_mask)		
-		clicked_news_emb = clicked_emb_flat.view(B, N, self.d_embed)      # (B, N, d_embed)
+		clicked_news_emb = clicked_emb_flat.view(B, N, self.d_embed_news)      # (B, N, d_embed_news)
 
 
-		# Embed article embeddings (lmfao attention again)
+		# Encode user profile using news embeddings
 		clicked_slot_mask = clicked_token_mask.all(dim=2)  # (B, N)
-	
-		user_emb = self.user_encoder(clicked_news_emb, clicked_slot_mask)  # (B, d_embed)
+		user_emb = self.user_encoder(clicked_news_emb, clicked_slot_mask)  # (B, d_embed_news)
 
 
 		# Flatten and encode candidate news
@@ -94,9 +98,7 @@ class NRMS(nn.Module):
 		candidate_flat_mask = candidate_token_mask.view(B * K, L)
 
 		candidate_emb_flat = self.news_encoder(candidate_flat_ids, candidate_flat_mask)
-		candidate_emb = candidate_emb_flat.view(B, K, self.d_embed)  # (B, K, d_embed)
+		candidate_emb = candidate_emb_flat.view(B, K, self.d_embed_news)  # (B, K, d_embed_news)
 
-		# Dot product: (B, K)
-		scores = torch.bmm(candidate_emb, user_emb.unsqueeze(2)).squeeze(2)
-
-		return scores  # logits (B, K)
+		# Dot product
+		return torch.bmm(candidate_emb, user_emb.unsqueeze(2)).squeeze(2) 	# logits (B, K)

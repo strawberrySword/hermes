@@ -17,6 +17,7 @@ class NewsEncoder(nn.Module):
         self,
         vocab_size: int,
         d_embed: int = 768,           # e.g., 200‐d word embeddings
+        d_embed_news: int | None = None,         # e.g., 200‐d news embeddings
         n_heads: int = 12,
         d_mlp: int = 3072,             # hidden dim in the Transformer FFN
         n_layers: int = 1,
@@ -25,6 +26,7 @@ class NewsEncoder(nn.Module):
     ):
         super().__init__()
         self.d_embed = d_embed
+        self.d_embed_news = d_embed_news if d_embed_news is not None else self.d_embed
 
         self.word_embedding = nn.Embedding(vocab_size, d_embed)
 
@@ -42,13 +44,13 @@ class NewsEncoder(nn.Module):
 
         self.postnet = nn.Sequential(
             nn.Linear(d_embed, d_mlp),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Dropout(dropout),
-            nn.Linear(d_mlp, d_embed)
+            nn.Linear(d_mlp, d_embed_news)
         )
 
 
-    def forward(self, token_ids: torch.LongTensor, mask: torch.BoolTensor = None):
+    def forward(self, token_ids: torch.LongTensor, mask: torch.BoolTensor):
         """
         token_ids: (batch_size, seq_len)
         mask: (batch_size, seq_len) where True=padding positions (to be masked out)
@@ -56,22 +58,20 @@ class NewsEncoder(nn.Module):
 
         key_padding_mask = mask if mask is not None else None  # (batch_size, seq_len) boolean padding mask
         
+        # Embed tokens and apply positional encoding
         x = self.word_embedding(token_ids)
         x = self.pos_encoding(x)
 
-        
-        x = self.transformer_encoder(x, src_key_padding_mask=key_padding_mask) # (batch_size, seq_len, d_embed)
+        # Transformer + resid        
+        transformer_out = self.transformer_encoder(x, src_key_padding_mask=key_padding_mask) # (batch_size, seq_len, d_embed)
+        x = x + transformer_out
 
-        
+        # Sum pool
         inv_mask = (~mask).unsqueeze(-1).float()  # 1 where token is real, 0 where pad
         x = torch.sum(x * inv_mask, dim=1)  # (batch_size, d_embed)
         
-
-        # postnet + residual connection
-        postnet_out = self.postnet(x)  # (batch_size, d_embed)
-        x = x + postnet_out
-
-        return x
+        # Postnet
+        return self.postnet(x)  # (batch_size, d_embed_out)
 
 
 class UserEncoder(nn.Module):
@@ -97,7 +97,7 @@ class UserEncoder(nn.Module):
 
     def __init__(
         self,
-        d_embed: int = 768,
+        d_embed: int = 768,  # news embedding dimension, will be used as user embedding dimension aswell
         n_heads: int = 12,
         d_mlp: int = 3072,
         n_layers: int = 1,
@@ -105,7 +105,6 @@ class UserEncoder(nn.Module):
     ):
         super().__init__()
         self.d_embed = d_embed
-
         
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_embed,
@@ -120,7 +119,7 @@ class UserEncoder(nn.Module):
 
         self.postnet = nn.Sequential(
             nn.Linear(d_embed, d_mlp),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Dropout(dropout),
             nn.Linear(d_mlp, d_embed),
         )
@@ -134,14 +133,14 @@ class UserEncoder(nn.Module):
         Returns:
           user_emb: FloatTensor of shape (B, E)
         """
-        
+
+        # Transformer + resid
         x = self.transformer(clicked_news_emb, src_key_padding_mask=click_mask)
+        x = clicked_news_emb + x
         
+        # Sum pool
         inv_mask = (~click_mask).unsqueeze(-1).float()  # shape: (B, N, 1)
         x = torch.sum(x * inv_mask, dim=1)         # shape: (B, E)
 
         
-        postnet_out = self.postnet(x)     # shape: (B, E)
-        user_emb = postnet_out + x    # shape: (B, E)
-
-        return user_emb
+        return self.postnet(x)     # shape: (B, E)
