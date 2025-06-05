@@ -90,10 +90,11 @@ def train(
     checkpoint_interval: int = 10000,
     project_name: str = "NRMS",
     save_path: str = "./checkpoints/",
+    smoothing_alpha: float = 0.6,  # EWMA smoothing factor
 ):
     """
     Trains `model` using train_dataloader, evaluates on val_dataloader each epoch,
-    logs loss + MRR to W&B (with step as the x-axis), and finally saves model parameters.
+    logs EWMA-smoothed loss + MRR to W&B, and finally saves model parameters.
     """
     model.to(device)
 
@@ -106,6 +107,7 @@ def train(
             "optimizer": "Adam",
             "loss_fn": "CrossEntropyLoss",
             "metric": "MRR",
+            "smoothing_alpha": smoothing_alpha,
         },
     )
     # Only log weight histograms (no gradients) to cut down on storage
@@ -120,6 +122,10 @@ def train(
                 )
 
     step = 0  # global batch index
+
+    # Initialize EWMA trackers
+    ewma_loss = None
+    ewma_mrr = None
 
     for epoch in range(1, epochs + 1):
         ##### Training Phase #####
@@ -158,17 +164,29 @@ def train(
                     batch_mrr += 1.0 / rank
                 batch_mrr /= batch_size
 
+            # Update EWMA for loss
+            if ewma_loss is None:
+                ewma_loss = loss.item()
+            else:
+                ewma_loss = smoothing_alpha * ewma_loss + (1.0 - smoothing_alpha) * loss.item()
+
+            # Update EWMA for MRR
+            if ewma_mrr is None:
+                ewma_mrr = batch_mrr
+            else:
+                ewma_mrr = smoothing_alpha * ewma_mrr + (1.0 - smoothing_alpha) * batch_mrr
+
             # Accumulate totals (for printing at end of epoch)
             total_train_loss += loss.item() * batch_size
             total_train_mrr += batch_mrr * batch_size
             total_train_samples += batch_size
 
-            # Log scalars to W&B every log_interval steps
+            # Log smoothed scalars to W&B every log_interval steps
             if step % log_interval == 0:
                 wandb.log(
                     {
-                        "train/loss": loss.item(),
-                        "train/MRR": batch_mrr,
+                        "train/loss_EWMA": ewma_loss,
+                        "train/MRR_EWMA": ewma_mrr,
                         "epoch": epoch,
                     },
                     step=step,
@@ -183,7 +201,7 @@ def train(
 
             step += 1
 
-        # End of epoch: compute averages
+        # End of epoch: compute raw averages
         avg_train_loss = total_train_loss / total_train_samples
         avg_train_mrr = total_train_mrr / total_train_samples
         print(
@@ -230,7 +248,7 @@ def train(
             f"Val Loss:   {avg_val_loss:.4f}, Val MRR:   {avg_val_mrr:.4f}"
         )
 
-        # Log validation metrics to W&B (use current step so they share the same x-axis if desired)
+        # Log validation metrics to W&B once per epoch
         wandb.log(
             {
                 "val/loss": avg_val_loss,
@@ -261,13 +279,11 @@ train(
     model,
     train_dl,
     valid_dl,
-    epochs=2,
+    epochs=5,
     lr=1e-4,
     device="cuda" if torch.cuda.is_available() else "cpu",
     log_interval=100,
-    checkpoint_interval=1000,
+    checkpoint_interval=2000,
     project_name="NRMS",
     save_path="./checkpoints/"
 )
-
-
