@@ -23,7 +23,7 @@ BASE_DATA_DIR = './data/MIND_'
 
 MAX_TITLE_LEN = 100   # each headline → exactly MAX_TITLE_LEN tokens (truncated/padded)
 MAX_HISTORY  = 50     # each user’s clicked history → exactly MAX_HISTORY articles
-BACTH_SIZE = 6
+BACTH_SIZE = 20
 
 
 tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
@@ -89,7 +89,7 @@ def train(
     checkpoint_interval: int = 10000,
     project_name: str = "NRMS",
     save_path: str = "./checkpoints/",
-    smoothing_alpha: float = 0.6,  # EWMA smoothing factor
+    smoothing_alpha: float = 0.8,  # EWMA smoothing factor
 ):
     """
     Trains `model` using train_dataloader, evaluates on val_dataloader each epoch,
@@ -163,6 +163,7 @@ def train(
             )  # (B, K)
             loss = criterion(scores, labels)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
             scheduler.step()  # <-- step the scheduler immediately after optimizer
 
@@ -294,7 +295,7 @@ train(
     model,
     train_dl,
     valid_dl,
-    epochs=2,
+    epochs=5,
     lr=1e-4,
     device="cuda" if torch.cuda.is_available() else "cpu",
     log_interval=100,
