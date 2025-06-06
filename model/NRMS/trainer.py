@@ -112,7 +112,7 @@ def train(
     # Only log weight histograms (no gradients) to cut down on storage
     wandb.watch(model, log="parameters", log_freq=500)
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(reduction='mean')
     optimizer = AdamW(
         model.parameters(),
         lr=lr,
