@@ -7,7 +7,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Avatar, { genConfig } from "react-nice-avatar";
 import { Box, Divider, Menu, MenuItem } from "@mui/material";
 import { useUser } from "../../../hooks/useUser";
-import { ExitToApp } from "@mui/icons-material";
+import { Apps, ExitToApp, History } from "@mui/icons-material";
+import { Link } from "react-router";
+import { routes } from "../../routes";
 
 const Topnav: React.FC = () => {
   const { user, logoff } = useUser();
@@ -33,10 +35,40 @@ const Topnav: React.FC = () => {
           open={Boolean(menuAnchor)}
           onClose={() => setMenuAnchor(null)}
         >
-          <MenuItem>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Typography>YOOO</Typography>
-              <ExitToApp />
+          <MenuItem
+            component={Link}
+            to={routes.HISTORY}
+            onClick={() => setMenuAnchor(null)}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                gap: 2,
+              }}
+            >
+              <Typography>History</Typography>
+              <History />
+            </Box>
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={routes.MF}
+            onClick={() => setMenuAnchor(null)}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                gap: 2,
+              }}
+            >
+              <Typography>Matrix Factorization</Typography>
+              <Apps />
             </Box>
           </MenuItem>
         </Menu>

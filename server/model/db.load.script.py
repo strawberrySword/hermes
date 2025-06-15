@@ -75,10 +75,10 @@ def load_action_history():
     actions_dict = actions.to_dict(orient="records")
 
     print(len(actions_dict))  # print the number of actions``
-    # likes_collection.insert_many(actions_dict)
+    likes_collection.insert_many(actions_dict)
 
 
 if __name__ == "__main__":
     # load_users()
-    # load_action_history()
-    load_articles()
+    load_action_history()
+    # load_articles()

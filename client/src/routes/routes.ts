@@ -1,5 +1,6 @@
 export const routes = {
-    "LOGIN": '/login',
-    "NRMS": '/nrms',
-    "MF": '/'
-}
+  LOGIN: "/login",
+  NRMS: "/nrms",
+  HISTORY: "/history",
+  MF: "/",
+};

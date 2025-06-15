@@ -7,7 +7,11 @@ import Topnav from "./Topnav";
 import { routes } from "../routes";
 import { useNavigate } from "react-router";
 
-export const Feed = () => {
+type Props = {
+  feedType: string;
+};
+
+export const Feed = ({ feedType }: Props) => {
   const { user } = useUser();
   const { ref: loadMoreRef, inView } = useInView();
   const navigate = useNavigate();
@@ -21,7 +25,9 @@ export const Feed = () => {
     previousPage: number;
     nextCursor: number;
   }> => {
-    const res = await fetch(`/api/articles/${user?.user_id}/${pageParam}`);
+    const res = await fetch(
+      `/api/articles/${feedType}/${user?.user_id}/${pageParam}`
+    );
     return res.json();
   };
 
@@ -34,7 +40,7 @@ export const Feed = () => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["articles", user?.user_id],
+    queryKey: ["articles", user?.user_id, feedType],
     queryFn: fetchProjects,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextCursor,

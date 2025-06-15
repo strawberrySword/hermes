@@ -16,7 +16,15 @@ createRoot(document.getElementById("root")!).render(
       <UserProvider>
         <BrowserRouter>
           <Routes>
-            <Route path={routes.MF} element={<Feed />} />
+            <Route
+              path={routes.MF}
+              element={<Feed feedType="matrix-factorization" />}
+            />
+            <Route path={routes.NRMS} element={<Feed feedType="nrms" />} />
+            <Route
+              path={routes.HISTORY}
+              element={<Feed feedType="history" />}
+            />
             <Route path={routes.LOGIN} element={<Login />} />
           </Routes>
         </BrowserRouter>
