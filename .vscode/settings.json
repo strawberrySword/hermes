@@ -3,6 +3,7 @@
     "python.analysis.typeCheckingMode": "standard",
     "cSpell.words": [
         "dotenv",
-        "jsonify"
+        "jsonify",
+        "Topnav"
     ]
 }

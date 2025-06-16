@@ -12,4 +12,7 @@ def find_random():
     """
     Find a random user
     """
-    return user_collection.aggregate([{"$sample": {"size": 1}}]).next()
+    return user_collection.aggregate([
+        {"$sample": {"size": 1}},
+        {"$project": {"_id": 0}}
+    ]).next()

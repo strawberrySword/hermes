@@ -3,10 +3,18 @@ import { useInView } from "react-intersection-observer";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useUser } from "../../hooks/useUser";
 import { Article, ArticleCard } from "./Article";
+import Topnav from "./Topnav";
+import { routes } from "../routes";
+import { useNavigate } from "react-router";
 
-export const Feed = () => {
+type Props = {
+  feedType: string;
+};
+
+export const Feed = ({ feedType }: Props) => {
   const { user } = useUser();
   const { ref: loadMoreRef, inView } = useInView();
+  const navigate = useNavigate();
 
   const fetchProjects = async ({
     pageParam,
@@ -17,8 +25,9 @@ export const Feed = () => {
     previousPage: number;
     nextCursor: number;
   }> => {
-
-    const res = await fetch(`/api/articles/${user?.user_id}/${pageParam}`);
+    const res = await fetch(
+      `/api/articles/${feedType}/${user?.user_id}/${pageParam}`
+    );
     return res.json();
   };
 
@@ -31,7 +40,7 @@ export const Feed = () => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["articles", user?.user_id],
+    queryKey: ["articles", user?.user_id, feedType],
     queryFn: fetchProjects,
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -45,28 +54,29 @@ export const Feed = () => {
   }, [inView, hasNextPage, fetchNextPage]);
 
   if (!user) {
-    // please log in message and url to login
-    return (
-      <div>
-        <h1>Please log in to view your feed</h1>
-        <a href="/login">Login</a>
-      </div>
-    );
+    navigate(routes.LOGIN);
   }
 
-  return status === "pending" ? (
-    <p>Loading...</p>
-  ) : status === "error" ? (
-    <p>Error: {error.message}</p>
-  ) : (
+  if (status === "pending") {
+    return <p>Loading...</p>;
+  }
+  if (status === "error") {
+    return <p>Error: {error.message}</p>;
+  }
+  return (
     <>
+      <Topnav />
+      <br />
+      <br />
+      <br />
+      <br />
       {data.pages.map((group, i) => (
         <React.Fragment key={i}>
           {group.data.map((article) => (
             <ArticleCard
               key={article.article_id}
               article={article}
-              userId={user.user_id}
+              userId={user?.user_id}
             />
           ))}
         </React.Fragment>
