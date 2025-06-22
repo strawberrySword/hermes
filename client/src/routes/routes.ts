@@ -1,6 +1,6 @@
 export const routes = {
   LOGIN: "/login",
-  NRMS: "/nrms",
+  FEED: "/feed",
   HISTORY: "/history",
-  MF: "/",
+  PROFILE: "/profile",
 };

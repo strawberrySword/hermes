@@ -134,7 +134,7 @@ def main():
     df = load_dataset(CSV_PATH)
     print("MongoDB connection established.")
 
-    top_articles = preprocess_articles_for_db(df, top_n=50000)
+    top_articles = preprocess_articles_for_db(df, top_n=100)
     formatted_articles = format_articles_for_insertion(top_articles)
     insert_articles(formatted_articles)
 
