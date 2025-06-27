@@ -379,8 +379,8 @@ class Supervised_TM:
         """init"""
         print("Loading data...")
         #Remove the # to run on as a test
-        train_df = self.load_news("Mind_train")#[:1000]
-        val_df = self.load_news("Mind_val")#[:300]
+        train_df = self.load_news("Mind_train")#[:10000]
+        val_df = self.load_news("Mind_val")#[:3000]
 
         print(f"Training samples: {len(train_df)}")
         print(f"Validation samples: {len(val_df)}")
@@ -432,6 +432,7 @@ class Supervised_TM:
         return self.label_encoder.inverse_transform(predictions)
     
 def main():
+    #delete the comments in lines 382 383 
     # example
     model_example = Supervised_TM()
     model_example.init()

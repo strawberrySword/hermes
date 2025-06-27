@@ -1,0 +1,14 @@
+user.name=gilgreenstein
+user.email=gilgre2@gmail.com
+pull.rebase=false
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+remote.upstream.url=git@github.com:strawberrySword/hermes.git
+remote.upstream.fetch=+refs/heads/*:refs/remotes/upstream/*
+branch.main.remote=origin
+branch.main.vscode-merge-base=origin/main
+branch.main.merge=refs/heads/main
+remote.origin.url=git@github.com:strawberrySword/hermes.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
