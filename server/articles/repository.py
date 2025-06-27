@@ -42,3 +42,11 @@ def create_like(article_id, user_id):
 def delete_like(article_id, user_id):
     likes_collection.delete_many(
         {"user_id": user_id, "article_id": article_id})
+
+
+def get_random(limit=10):
+    """
+    Get random articles
+    """
+    return list(articles_collection.aggregate([{"$sample": {"size": limit}}, {"$project": {"_id": 0}}]))
+    # return articles_collection.find({}, {"_id": 0}).limit(limit)

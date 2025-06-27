@@ -15,32 +15,16 @@ import ArticleIcon from "@mui/icons-material/Article";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { Article } from "../../../hooks/api";
 
-export type Article = {
-  article_id: string;
-  genre: string;
-  subtitle: string;
-  title: string;
-  topic: string;
-  url: string;
-};
-
-export const ArticleCard = ({
-  article,
-  userId,
-}: {
-  article: Article;
-  userId: string | undefined;
-}) => {
+const ArticleCard = ({ article }: { article: Article }) => {
   const [isLiked, setIsLiked] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const checkIfLiked = async () => {
       try {
-        const response = await fetch(
-          `/api/articles/like/${article.article_id}/${userId}`
-        );
+        const response = await fetch(`/api/articles/like/${article}/${""}`);
         if (response.status === 404) {
           setIsLiked(false);
           return;
@@ -55,21 +39,18 @@ export const ArticleCard = ({
     };
 
     checkIfLiked();
-  }, [article, userId]);
+  }, [article]);
 
   const handleLike = async () => {
     try {
-      const response = await fetch(
-        `/api/articles/like/${article.article_id}/${userId}`,
-        {
-          method: isLiked ? "DELETE" : "POST",
-        }
-      );
+      const response = await fetch(`/api/articles/like/${article}/`, {
+        method: isLiked ? "DELETE" : "POST",
+      });
       if (!response.ok) {
         throw new Error("Failed to like the article");
       }
       setIsLiked((liked) => !liked);
-      queryClient.invalidateQueries({ queryKey: ["articles", userId] });
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
     } catch (error) {
       console.error("Error liking the article:", error);
     }
@@ -130,3 +111,5 @@ export const ArticleCard = ({
     </Card>
   );
 };
+
+export default ArticleCard;

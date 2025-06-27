@@ -1,94 +1,29 @@
-import React, { useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useUser } from "../../hooks/useUser";
-import { Article, ArticleCard } from "./Article";
 import Topnav from "./Topnav";
-import { routes } from "../routes";
-import { useNavigate } from "react-router";
+import Category from "./Category";
 
-type Props = {
-  feedType: string;
-};
+const Feed = () => {
+  const categories = ["Action", "Comedy", "Drama", "Horror"];
 
-export const Feed = ({ feedType }: Props) => {
-  const { user } = useUser();
-  const { ref: loadMoreRef, inView } = useInView();
-  const navigate = useNavigate();
-
-  const fetchProjects = async ({
-    pageParam,
-  }: {
-    pageParam: number;
-  }): Promise<{
-    data: Article[];
-    previousPage: number;
-    nextCursor: number;
-  }> => {
-    const res = await fetch(
-      `/api/articles/${feedType}/${user?.user_id}/${pageParam}`
-    );
-    return res.json();
-  };
-
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: ["articles", user?.user_id, feedType],
-    queryFn: fetchProjects,
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled: !!user,
-  });
-
-  useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, fetchNextPage]);
-
-  if (!user) {
-    navigate(routes.LOGIN);
-  }
-
-  if (status === "pending") {
-    return <p>Loading...</p>;
-  }
-  if (status === "error") {
-    return <p>Error: {error.message}</p>;
-  }
+  // return (
+  //   <>
+  //     <Topnav />
+  //     {isLoading ? (
+  //       <Typography>Loading...</Typography>
+  //     ) : (
+  //       data?.map((article) => (
+  //         <ArticleCard key={article.url} article={article} />
+  //       ))
+  //     )}
+  //   </>
+  // );
   return (
     <>
       <Topnav />
-      <br />
-      <br />
-      <br />
-      <br />
-      {data.pages.map((group, i) => (
-        <React.Fragment key={i}>
-          {group.data.map((article) => (
-            <ArticleCard
-              key={article.article_id}
-              article={article}
-              userId={user?.user_id}
-            />
-          ))}
-        </React.Fragment>
+      {categories.map((category) => (
+        <Category key={category} category={category} />
       ))}
-      <div ref={loadMoreRef}>
-        {isFetchingNextPage
-          ? "Loading more..."
-          : hasNextPage
-          ? "Scroll down to load more"
-          : "Nothing more to load"}
-      </div>
-      <div>{isFetching && !isFetchingNextPage ? "Fetching..." : null}</div>
     </>
   );
 };
+
+export default Feed;

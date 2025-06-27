@@ -7,6 +7,10 @@ def recommend(user_id, start=0, end=10):
     return repository.find_many(recommendations[start:end])
 
 
+def get_some_articles():
+    return repository.get_random(10)
+
+
 def get_seen(user_id, start=0, end=10):
     seen = repository.get_seen(user_id, start, end)
     return repository.find_many(seen)
