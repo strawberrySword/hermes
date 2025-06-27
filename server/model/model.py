@@ -82,12 +82,12 @@ def recommend(user_id, user_factors, item_factors, user_map, item_map, reverse_i
 
 
 # Precompute data
-behavior_path = "./model/data/behaviors.tsv"  # Your path
-matrix, user_map, item_map, user_clicks = parse_behaviors(behavior_path)
-reverse_item_map = [None] * len(item_map)
-for k, v in item_map.items():
-    reverse_item_map[v] = k
-user_factors, item_factors = perform_svd_sparse(matrix)
+# behavior_path = "./model/data/behaviors.tsv"  # Your path
+# matrix, user_map, item_map, user_clicks = parse_behaviors(behavior_path)
+# reverse_item_map = [None] * len(item_map)
+# for k, v in item_map.items():
+#     reverse_item_map[v] = k
+# user_factors, item_factors = perform_svd_sparse(matrix)
 
 
 def get_recommendations(user_id, num_recommendations=5) -> list[str]:
