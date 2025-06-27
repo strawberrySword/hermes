@@ -365,6 +365,7 @@ class Supervised_TM:
                 'f1_macro': 0.0,
                 'predictions': np.zeros(len(y_test))
             }
+    #news loading and preprocessing
     def load_news(self,path):
         """Load and preprocess news data."""
         df = pd.read_table(f"{path}/news.tsv", header=None)
