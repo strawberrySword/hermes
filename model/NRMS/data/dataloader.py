@@ -22,12 +22,14 @@ class MindDataset(Dataset):
         data: List[Dict],
         max_clicks: int = 50,
         max_title_len: int = 100,
-        pad_id: int = 0  # usually 0, but can be set to tokenizer.pad_token_id
+        pad_id: int = 0,  # usually 0, but can be set to tokenizer.pad_token_id
+        include_topics: bool = False
     ):
         self.data = data
         self.max_clicks = max_clicks
         self.max_title_len = max_title_len
         self.pad_id = pad_id
+        self.include_topics = include_topics
 
     def __len__(self):
         return len(self.data)
@@ -78,6 +80,21 @@ class MindDataset(Dataset):
 
         label = sample["label"]
 
+        # c) Cadidate topics (if included)
+        if self.include_topics:
+            candidate_topics = sample["candidate_topics"]
+            cand_topic_ids, cand_topic_mask = self.pad_and_mask(candidate_topics)
+            
+            return {
+                "clicked_token_ids":   clicked_ids,   # (max_clicks, max_title_len)
+                "clicked_token_mask":  clicked_mask,  # (max_clicks, max_title_len)
+                "candidate_token_ids": cand_ids,      # (Ki, max_title_len)
+                "candidate_token_mask": cand_mask,    # (Ki, max_title_len)
+                "candidate_topic_ids": cand_topic_ids,  # (Ki, max_title_len)
+                "candidate_topic_mask": cand_topic_mask,  # (Ki, max_title_len)
+                "label":               label          # int
+            }    
+
         return {
             "clicked_token_ids":   clicked_ids,   # (max_clicks, max_title_len)
             "clicked_token_mask":  clicked_mask,  # (max_clicks, max_title_len)
@@ -86,7 +103,7 @@ class MindDataset(Dataset):
             "label":               label          # int
         }
 
-def mind_collate_fn(batch):
+def mind_collate_fn(batch, include_topics: bool = False):
     """
     Pads candidate lists (which may vary Ki per sample) up to K_max,
     then stacks everything into fixed‐shape tensors.
@@ -115,10 +132,22 @@ def mind_collate_fn(batch):
     cand_mask = torch.zeros((B, K_max, L), dtype=torch.bool)        # (B, K_max, L)
     labels    = torch.zeros(B, dtype=torch.long)                    # (B,)
 
+    if include_topics:
+        cand_topic_ids = torch.full((B, K_max, L), PAD_ID, dtype=torch.long)  # (B, K_max, L)
+        cand_topic_mask = torch.zeros((B, K_max, L), dtype=torch.bool)
+
     for i, x in enumerate(batch):
         Ki = x["candidate_token_ids"].shape[0]
         cand_ids[i, :Ki, :]  = x["candidate_token_ids"]
         cand_mask[i, :Ki, :] = x["candidate_token_mask"]
         labels[i] = x["label"]
 
+        Ki_topic = x["candidate_topic_ids"].shape[0]
+        if include_topics:
+            cand_topic_ids[i, :Ki_topic, :] = x["candidate_topic_ids"]
+            cand_topic_mask[i, :Ki_topic, :] = x["candidate_topic_mask"]
+
+    if include_topics:
+        return clicked_ids,clicked_mask,cand_ids, cand_mask,   cand_topic_ids, cand_topic_mask, labels
+    
     return clicked_ids, clicked_mask, cand_ids, cand_mask, labels

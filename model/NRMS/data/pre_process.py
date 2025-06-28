@@ -1,5 +1,6 @@
 import os
 from typing import List, Dict
+from xml.etree.ElementInclude import include
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizerFast
@@ -11,7 +12,8 @@ PAD_ID = 0
 def load_and_tokenize_news(
         news_path: str,
         tokenizer: BertTokenizerFast,
-        max_len: int
+        max_len: int,
+        include_topics: bool = False
     ) -> Dict[str, List[int]]:
     """
     Parses MIND’s news.tsv to build news_dict: news_id → [WordPiece IDs].
@@ -41,6 +43,24 @@ def load_and_tokenize_news(
                 input_ids = [PAD_ID]
             news_dict[news_id] = input_ids
 
+            if include_topics:
+                topic_text = cols[1]
+
+                topic_encoding = tokenizer(
+                    topic_text,
+                    add_special_tokens=True,
+                    truncation=True,
+                    max_length=max_len,
+                    padding=False,
+                    return_attention_mask=False
+                )
+                topic_ids = topic_encoding["input_ids"]
+                if len(topic_ids) == 0:
+                    # If tokenizer for some reason returns [], we at least store one PAD
+                    topic_ids = [PAD_ID]
+                news_dict[f'{news_id}_topic'] = topic_ids
+
+
     return news_dict
 
 # --------------------------------------------------
@@ -49,7 +69,8 @@ def load_and_tokenize_news(
 def load_behaviors(
         behaviors_path: str,
         news_dict: Dict[str, List[int]],
-        max_history: int
+        max_history: int,
+        include_topics: bool = False
     ) -> List[Dict]:
     """
     Parses MIND’s behaviors.tsv into a list of samples.
@@ -87,14 +108,20 @@ def load_behaviors(
 
             # 2) Build candidate_titles and find the clicked index
             candidate_titles: List[List[int]] = []
+            candidate_topics: List[List[int]] = []
             label_index = None
             for idx, item in enumerate(candidate_items):
                 nid, lbl_str = item.split('-')
                 lbl = int(lbl_str)
                 if nid in news_dict:
                     candidate_titles.append(news_dict[nid])
+                    if include_topics and f'{nid}_topic' in news_dict:
+                        candidate_topics.append(news_dict[f'{nid}_topic'])
                 else:
                     candidate_titles.append([PAD_ID])
+                    if include_topics:
+                        candidate_topics.append([PAD_ID])
+
                 if lbl == 1 and label_index is None:
                     label_index = idx
 
@@ -102,10 +129,18 @@ def load_behaviors(
             if label_index is None:
                 continue
 
-            samples.append({
-                "clicked_titles":   clicked_titles,       # List[List[int]] of length exactly max_history
-                "candidate_titles": candidate_titles,     # List[List[int]] (length Ki)
-                "label":            label_index           # int in [0, Ki-1]
-            })
+            if include_topics:
+                samples.append({
+                    "clicked_titles":   clicked_titles,       # List[List[int]] of length exactly max_history
+                    "candidate_titles": candidate_titles,     # List[List[int]] (length Ki)
+                    "candidate_topics": candidate_topics,   # List[List[int]] (length Ki) if include_topics=True
+                    "label":            label_index           # int in [0, Ki-1]
+                })
+            else:
+                samples.append({
+                    "clicked_titles":   clicked_titles,       # List[List[int]] of length exactly max_history
+                    "candidate_titles": candidate_titles,     # List[List[int]] (length Ki)
+                    "label":            label_index           # int in [0, Ki-1]
+                })
 
     return samples
