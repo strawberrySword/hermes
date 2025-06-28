@@ -34,7 +34,6 @@ def auth_required(f):
                 "verify_signature": False})
 
             find_or_create_user(decoded_payload)
-            return f(current_user=decoded_payload, *args, **kwargs)
 
         except ExpiredSignatureError:
             return jsonify({'error': 'Token has expired'}), 401
@@ -43,7 +42,9 @@ def auth_required(f):
         except InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
         except Exception as e:
-            return jsonify({'error': 'Token validation failed'}), 401
+            return jsonify({'error': f'Token validation failed {e}'}), 500
+        print(f"User {decoded_payload['email']} authenticated successfully")
+        return f(user_email=decoded_payload['email'], *args, **kwargs)
 
     return decorated_function
 

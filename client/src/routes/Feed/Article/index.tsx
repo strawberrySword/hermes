@@ -1,22 +1,13 @@
-import {
-  Favorite,
-  FavoriteBorder,
-  AccessTime,
-  Launch,
-} from "@mui/icons-material";
+import { AccessTime, Launch } from "@mui/icons-material";
 import { Box, CardContent, Stack, Typography } from "@mui/material";
-import { Card, CardMedia, Chip, IconButton, Avatar } from "@mui/material";
-import { Article } from "../../../hooks/api";
+import { Card, CardMedia, Chip, Avatar } from "@mui/material";
+import { Article, useRecordOpenedArticle } from "../../../hooks/api";
 
 interface ArticleCardProps {
   article: Article;
 }
 
 const ArticleCard = ({ article }: ArticleCardProps) => {
-  const toggleLike = () => {
-    console.log("like");
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -25,6 +16,8 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
       year: "numeric",
     });
   };
+
+  const { mutate: recordOpened } = useRecordOpenedArticle(article.id);
 
   const getPublisherInitials = (publisher: string) => {
     return publisher
@@ -36,6 +29,10 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
   return (
     <Card
       key={article.url}
+      onClick={() => {
+        recordOpened();
+        window.open(article.url);
+      }}
       sx={{
         minWidth: 320,
         maxWidth: 320,
@@ -79,36 +76,9 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
             backdropFilter: "blur(4px)",
           }}
         />
-
-        {/* Like Button */}
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleLike();
-          }}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            bgcolor: "rgba(255, 255, 255, 0.9)",
-            backdropFilter: "blur(4px)",
-            "&:hover": {
-              bgcolor: "rgba(255, 255, 255, 1)",
-              transform: "scale(1.1)",
-            },
-          }}
-        >
-          {false ? (
-            <Favorite sx={{ color: "#ef4444", fontSize: 20 }} />
-          ) : (
-            <FavoriteBorder sx={{ color: "#64748b", fontSize: 20 }} />
-          )}
-        </IconButton>
       </Box>
 
-      {/* Content Section */}
       <CardContent sx={{ p: 3 }}>
-        {/* Publisher Info */}
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
           <Avatar
             sx={{
@@ -137,7 +107,6 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
           </Box>
         </Stack>
 
-        {/* Title */}
         <Typography
           variant="h6"
           component="h3"
@@ -159,9 +128,6 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          onClick={() => {
-            window.open(article.url);
-          }}
         >
           <Typography
             variant="body2"

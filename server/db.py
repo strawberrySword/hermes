@@ -10,5 +10,5 @@ client = MongoClient(MONGO_URL)
 db = client["hermes"]
 user_collection = db["users"]
 articles_collection = db["articles"]
-likes_collection = db["likes"]
+interactions_collection = db["interactions"]
 print("Connected to MongoDB")

@@ -33,7 +33,6 @@ const Category = ({ category }: { category: string }) => {
       }}
     >
       <Container maxWidth="xl">
-        {/* Header */}
         <Typography
           variant="h5"
           component="h2"
@@ -46,7 +45,6 @@ const Category = ({ category }: { category: string }) => {
           {category}{" "}
         </Typography>
 
-        {/* Scroll Container */}
         <Box
           sx={{
             position: "relative",

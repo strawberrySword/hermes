@@ -17,6 +17,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 import articles.controller
 import auth.controller
+import interactions.controller
 
 if __name__ == '__main__':
     print("Starting the server...")
