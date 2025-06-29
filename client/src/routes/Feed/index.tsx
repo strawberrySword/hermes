@@ -1,8 +1,9 @@
 import Topnav from "./Topnav";
 import Category from "./Category";
+import { useTopics } from "../../hooks/api";
 
 const Feed = () => {
-  const categories = ["Action", "Comedy", "Drama", "Horror"];
+  const { data: topics } = useTopics();
 
   // return (
   //   <>
@@ -19,8 +20,8 @@ const Feed = () => {
   return (
     <>
       <Topnav />
-      {categories.map((category) => (
-        <Category key={category} category={category} />
+      {topics?.map((topic) => (
+        <Category key={topic} topic={topic} />
       ))}
     </>
   );

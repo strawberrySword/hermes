@@ -7,10 +7,22 @@ from auth.service import auth_required
 
 PAGE_SIZE = 10
 
-@app.route('/api/articles', methods=['GET'])
+
+@app.route('/api/articles/<category>', methods=['GET'])
 @auth_required
-def get_some_articles(user_email):
-    return service.recommend(user_email), 200
+def get_some_articles(user_email, category):
+    return service.recommend(user_email, category), 200
+
+
+@app.route('/api/article', methods=['GET'])
+def get_random_article():
+    return service.get_random_article(), 200
+
+
+@app.route('/api/articles/top-topics', methods=['GET'])
+@auth_required
+def get_top_topics(user_email):
+    return service.get_top_topics(user_email), 200
 
 
 @app.route('/api/proxy')

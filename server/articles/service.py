@@ -10,18 +10,16 @@ import torch
 model = load_model()
 
 
-def recommend(user_id):
+def recommend(user_id, topic):
     stale_articles = interactions_repository.get_stale(user_id)
-    if (not stale_articles):
-        return jsonify(get_some_articles())
-    candidates = repository.find_fresh(stale_articles)
+    candidates = repository.find_fresh(stale_articles, topic)
     viewed_articles_ids = interactions_repository.get_viewed(user_id)
+    if (not viewed_articles_ids):
+        return jsonify(get_some_articles())
     viewed_articles_ids = [ObjectId(article['article_id'])
                            for article in viewed_articles_ids]
-    print("before candidates", len(candidates))
 
     viewed_articles = repository.find_many(viewed_articles_ids)
-    print("after candidates", len(viewed_articles))
     _scores, recommended_articles_id = recommend_topk_from_titles(
         model=model,
         history_titles=[article['title'] for article in viewed_articles],
@@ -38,5 +36,17 @@ def recommend(user_id):
     return jsonify(res)
 
 
+def get_top_topics(user_id):
+    history = interactions_repository.get_viewed(user_id)
+    if not history:
+        return jsonify([])
+    history_ids = [ObjectId(article['article_id']) for article in history]
+    return jsonify(repository.get_top_topics(history_ids))
+
+
 def get_some_articles():
     return repository.get_random(10)
+
+
+def get_random_article():
+    return repository.get_random(1)[0]

@@ -7,6 +7,7 @@ import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { routes } from "./routes/routes.ts";
 import { Auth0Provider } from "@auth0/auth0-react";
+import Tinder from "./routes/Tinder";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path={routes.HISTORY} element={<Feed />} />
             <Route path={routes.LOGIN} element={<Login />} />
             <Route path={routes.PROFILE} element={<Login />} />
+            <Route path={routes.TINDER} element={<Tinder />} />
           </Routes>
         </BrowserRouter>
       </Auth0Provider>

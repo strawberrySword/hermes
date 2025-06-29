@@ -1,5 +1,5 @@
 from db import articles_collection, interactions_collection
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def record_open(user_email, article_id):
@@ -14,7 +14,6 @@ def record_open(user_email, article_id):
 
 def record_recommended(user_id, article_id):
     now = datetime.now()
-    print(f"Recording recommendation for user {user_id} and article {article_id} at {now}")
     interactions_collection.update_one(
         {"user": user_id, "article_id": article_id},
         {"$set": {"last_recommended": now}},
@@ -23,7 +22,7 @@ def record_recommended(user_id, article_id):
 
 
 def get_stale(user_id):
-    one_hour_ago = datetime.now().timestamp() - 3600
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
 
     return list(interactions_collection.find({
         "user": user_id,

@@ -1,0 +1,36 @@
+
+# Flask
+flask
+flask_cors
+python-dotenv
+
+# Database
+pymongo[srv]
+dnspython
+
+# ML
+torch
+transformers
+pandas
+langdetect
+
+# Other
+requests
+feedparser
+python-dateutil
+sgmllib3k
+six
+idna
+future
+pip
+wheel
+google
+tornado
+certifi
+urllib3
+chardet
+setuptools
+Cython
+docutils
+PyJWT
+

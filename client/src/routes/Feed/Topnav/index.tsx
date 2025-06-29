@@ -20,8 +20,8 @@ const Topnav: React.FC = () => {
 
   return (
     <>
-      <AppBar position="fixed">
-        <Toolbar>
+      <AppBar sx={{ background: "black" }} position="fixed">
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <IconButton
             edge="start"
             color="inherit"
@@ -73,9 +73,14 @@ const Topnav: React.FC = () => {
               </Box>
             </MenuItem>
           </Menu>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Hermes
-          </Typography>
+          </Typography> */}
+          <img
+            src="/logo-new.png"
+            alt="My Image"
+            style={{ width: "100px", height: "auto" }}
+          />
           <Box>
             <IconButton
               size="large"

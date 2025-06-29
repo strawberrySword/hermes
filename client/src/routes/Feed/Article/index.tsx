@@ -5,9 +5,13 @@ import { Article, useRecordOpenedArticle } from "../../../hooks/api";
 
 interface ArticleCardProps {
   article: Article;
+  extremelyClickable?: boolean;
 }
 
-const ArticleCard = ({ article }: ArticleCardProps) => {
+const ArticleCard = ({
+  article,
+  extremelyClickable = true,
+}: ArticleCardProps) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -30,8 +34,10 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
     <Card
       key={article.url}
       onClick={() => {
-        recordOpened();
-        window.open(article.url);
+        if (extremelyClickable) {
+          recordOpened();
+          window.open(article.url);
+        }
       }}
       sx={{
         minWidth: 320,
@@ -58,11 +64,17 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
           alt={article.title}
           sx={{
             objectFit: "cover",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            MozUserSelect: "none",
+            msUserSelect: "none",
+            WebkitUserDrag: "none",
+            pointerEvents: "none",
           }}
         />
 
         {/* Keyword Badge */}
-        <Chip
+        {/* <Chip
           label={article.keyword}
           size="small"
           sx={{
@@ -75,7 +87,7 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
             fontSize: "0.75rem",
             backdropFilter: "blur(4px)",
           }}
-        />
+        /> */}
       </Box>
 
       <CardContent sx={{ p: 3 }}>
@@ -119,6 +131,10 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
             WebkitLineClamp: 3,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            MozUserSelect: "none",
+            msUserSelect: "none",
           }}
         >
           {article.title}
@@ -137,6 +153,10 @@ const ArticleCard = ({ article }: ArticleCardProps) => {
               display: "flex",
               alignItems: "center",
               gap: 0.5,
+            }}
+            onClick={() => {
+              recordOpened();
+              window.open(article.url);
             }}
           >
             Read More

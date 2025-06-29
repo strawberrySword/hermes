@@ -5,10 +5,10 @@ import { useArticles } from "../../../hooks/api";
 import SkeletonCategory from "./SkeletonCategory";
 import ArticleCard from "../Article";
 
-const Category = ({ category }: { category: string }) => {
+const Category = ({ topic }: { topic: string }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading } = useArticles();
+  const { data, isLoading } = useArticles(topic);
 
   if (isLoading) {
     return <SkeletonCategory />;
@@ -42,7 +42,7 @@ const Category = ({ category }: { category: string }) => {
             color: "white",
           }}
         >
-          {category}{" "}
+          {topic !== "all" ? topic : ""}{" "}
         </Typography>
 
         <Box
