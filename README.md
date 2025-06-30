@@ -73,7 +73,7 @@ cd hermes
 **3. Set up the frontend:**
 
 - **Install Node.js dependencies:**
-  ```bash
+  ```bash`
   cd client
   npm install
   ```

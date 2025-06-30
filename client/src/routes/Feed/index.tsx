@@ -3,9 +3,15 @@ import Category from "./Category";
 import { useTopics } from "../../hooks/api";
 import Topic from "./Topic";
 import { Box } from "@mui/material";
+import { useNavigate } from "react-router";
 
 const Feed = () => {
   const { data: topics } = useTopics();
+  const navigate = useNavigate();
+
+  if (topics?.length === 0) {
+    navigate("/tinder");
+  }
 
   return (
     <>

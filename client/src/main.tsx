@@ -37,7 +37,6 @@ createRoot(document.getElementById("root")!).render(
               <Route path={routes.FEED} element={<Feed />} />
               <Route path={routes.HISTORY} element={<Feed />} />
               <Route path={routes.LOGIN} element={<Login />} />
-              <Route path={routes.PROFILE} element={<Login />} />
               <Route path={routes.TINDER} element={<Tinder />} />
             </Routes>
           </BrowserRouter>

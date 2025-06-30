@@ -6,7 +6,7 @@ const LoginButton = () => {
   useEffect(() => {
     loginWithRedirect();
   }, [loginWithRedirect]);
-
+  return <></>;
 };
 
 export default LoginButton;

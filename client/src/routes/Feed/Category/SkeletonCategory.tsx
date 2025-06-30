@@ -9,7 +9,6 @@ const SkeletonCategory = () => {
       }}
     >
       <Container maxWidth="xl">
-        {/* <Skeleton height={32} width={100} /> */}
         <Box
           sx={{
             display: "flex",

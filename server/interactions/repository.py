@@ -42,7 +42,7 @@ def get_user_interaction_data(user_id):
                 "viewed_articles": [
                     {"$match": {"is_opened": True}},
                     {"$sort": {"last_opened": -1}},
-                    {"$limit": 100},
+                    {"$limit": 50},
                     {"$project": {"_id": 0, "article_id": 1}},
                 ],
             }

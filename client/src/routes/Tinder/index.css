@@ -19,12 +19,11 @@ background-size: cover;
 .tinderCard_container{
   display: flex;
   justify-content: center;
-  height: 100vh;
+  /* height: 100vh; */
   align-items: center;
   flex-direction: row;
   display: flex;
   gap:'5rem';
-  position: absolute;
   align-items: center;
   justify-content: space-around;
   width: 100vw;
