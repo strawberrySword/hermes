@@ -1,5 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
 export type Article = {
@@ -15,9 +15,9 @@ export type Article = {
 export const useArticles = (topic: string) => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["articles", topic],
-    queryFn: async (): Promise<Array<Article>> => {
+    queryFn: async ({ pageParam = 0 }): Promise<Array<Article>> => {
       const token = await getAccessTokenSilently({
         detailedResponse: true,
       });
@@ -30,6 +30,8 @@ export const useArticles = (topic: string) => {
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) => pages.length,
   });
 };
 
@@ -69,7 +71,7 @@ export const useTopics = () => {
         headers: { Authorization: `Bearer ${token.id_token}` },
       });
 
-      return ["all", ...response.data.map((topic) => topic["topic"])];
+      return [...response.data.map((topic) => topic["topic"])];
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,

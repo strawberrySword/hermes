@@ -55,7 +55,7 @@ def get_top_topics(article_ids):
         {"$match": {"_id": {"$in": article_ids}}},
         {"$group": {"_id": "$topic", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
-        {"$limit": 5},
+        {"$limit": 6},
         {"$project": {"_id": 0, "topic": "$_id", "count": 1}}
     ]
     return list(articles_collection.aggregate(pipeline))

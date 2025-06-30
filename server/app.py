@@ -3,6 +3,7 @@ from flask import Flask
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
+from db_scripts.indexes import create_indexes
 
 load_dotenv()
 
@@ -20,5 +21,6 @@ import auth.controller
 import interactions.controller
 
 if __name__ == '__main__':
+    create_indexes()
     print("Starting the server...")
     app.run(port=5000, debug=True)

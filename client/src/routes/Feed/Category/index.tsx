@@ -1,6 +1,12 @@
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { Box, Container, IconButton, Typography } from "@mui/material";
-import { useRef } from "react";
+import {
+  Box,
+  CircularProgress,
+  Container,
+  IconButton,
+  Typography,
+} from "@mui/material";
+import { useEffect, useRef } from "react";
 import { useArticles } from "../../../hooks/api";
 import SkeletonCategory from "./SkeletonCategory";
 import ArticleCard from "../Article";
@@ -8,7 +14,30 @@ import ArticleCard from "../Article";
 const Category = ({ topic }: { topic: string }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading } = useArticles(topic);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useArticles(topic);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        if (
+          scrollLeft + clientWidth >= scrollWidth - 5 &&
+          hasNextPage &&
+          !isFetchingNextPage
+        ) {
+          fetchNextPage();
+        }
+      }
+    };
+
+    const scrollElement = scrollRef.current;
+    scrollElement?.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollElement?.removeEventListener("scroll", handleScroll);
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) {
     return <SkeletonCategory />;
@@ -27,9 +56,7 @@ const Category = ({ topic }: { topic: string }) => {
   return (
     <Box
       sx={{
-        bgcolor: "#141414",
         py: 3,
-        color: "white",
       }}
     >
       <Container maxWidth="xl">
@@ -42,7 +69,7 @@ const Category = ({ topic }: { topic: string }) => {
             color: "white",
           }}
         >
-          {topic !== "all" ? topic : ""}{" "}
+          {topic !== "all" ? topic : "For You"}{" "}
         </Typography>
 
         <Box
@@ -92,7 +119,11 @@ const Category = ({ topic }: { topic: string }) => {
               },
             }}
           >
-            <ChevronRight fontSize="large" />
+            {isFetchingNextPage ? (
+              <CircularProgress />
+            ) : (
+              <ChevronRight fontSize="large" />
+            )}
           </IconButton>
 
           <Box
@@ -109,9 +140,9 @@ const Category = ({ topic }: { topic: string }) => {
               pb: 1,
             }}
           >
-            {data?.map((item) => (
-              <ArticleCard key={item.url} article={item} />
-            ))}
+            {data?.pages.map((page) =>
+              page.map((item) => <ArticleCard key={item.url} article={item} />)
+            )}
           </Box>
         </Box>
       </Container>

@@ -11,15 +11,22 @@ model = load_model()
 
 
 def recommend(user_id, topic):
-    stale_articles = interactions_repository.get_stale(user_id)
-    candidates = repository.find_fresh(stale_articles, topic)
-    viewed_articles_ids = interactions_repository.get_viewed(user_id)
-    if (not viewed_articles_ids):
+    interaction_data = interactions_repository.get_user_interaction_data(user_id)
+    stale_articles = interaction_data["stale_articles"]
+    viewed_articles_ids = interaction_data["viewed_articles"]
+
+    if not viewed_articles_ids:
         return jsonify(get_some_articles())
+
+    candidates = repository.find_fresh(stale_articles, topic)
+    if not candidates:
+        return jsonify([])
+
     viewed_articles_ids = [ObjectId(article['article_id'])
                            for article in viewed_articles_ids]
 
     viewed_articles = repository.find_many(viewed_articles_ids)
+
     _scores, recommended_articles_id = recommend_topk_from_titles(
         model=model,
         history_titles=[article['title'] for article in viewed_articles],
@@ -37,7 +44,8 @@ def recommend(user_id, topic):
 
 
 def get_top_topics(user_id):
-    history = interactions_repository.get_viewed(user_id)
+    interaction_data = interactions_repository.get_user_interaction_data(user_id)
+    history = interaction_data["viewed_articles"]
     if not history:
         return jsonify([])
     history_ids = [ObjectId(article['article_id']) for article in history]

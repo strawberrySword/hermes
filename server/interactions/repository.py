@@ -1,4 +1,4 @@
-from db import articles_collection, interactions_collection
+from db import interactions_collection
 from datetime import datetime, timedelta
 
 
@@ -21,21 +21,34 @@ def record_recommended(user_id, article_id):
     )
 
 
-def get_stale(user_id):
+def get_user_interaction_data(user_id):
     one_hour_ago = datetime.utcnow() - timedelta(hours=1)
 
-    return list(interactions_collection.find({
-        "user": user_id,
-        "$or": [
-            {"last_recommended": {"$gte": one_hour_ago}},
-            {"is_opened": True}
-        ]
-    },
-        {"_id": 0, "article_id": 1}))
-
-
-def get_viewed(user_id):
-    return list(interactions_collection.find(
-        {"user": user_id, "is_opened": True},
-        {"_id": 0, "article_id": 1}
-    ).sort("last_opened", -1).limit(100))
+    pipeline = [
+        {"$match": {"user": user_id}},
+        {
+            "$facet": {
+                "stale_articles": [
+                    {
+                        "$match": {
+                            "$or": [
+                                {"last_recommended": {"$gte": one_hour_ago}},
+                                {"is_opened": True},
+                            ]
+                        }
+                    },
+                    {"$project": {"_id": 0, "article_id": 1}},
+                ],
+                "viewed_articles": [
+                    {"$match": {"is_opened": True}},
+                    {"$sort": {"last_opened": -1}},
+                    {"$limit": 100},
+                    {"$project": {"_id": 0, "article_id": 1}},
+                ],
+            }
+        },
+    ]
+    result = list(interactions_collection.aggregate(pipeline))
+    if not result:
+        return {"stale_articles": [], "viewed_articles": []}
+    return result[0]
