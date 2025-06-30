@@ -11,8 +11,7 @@ import torch
 model = load_model()
 
 
-def recommend(user_id, topic):
-    start = datetime.datetime.now()
+def recommend(user_id, topic, page_size):
     interaction_data = interactions_repository.get_user_interaction_data(
         user_id)
     stale_articles = interaction_data["stale_articles"]
@@ -29,19 +28,15 @@ def recommend(user_id, topic):
                            for article in viewed_articles_ids]
 
     viewed_articles = repository.find_many(viewed_articles_ids)
-    end = datetime.datetime.now()
-    print(end - start)
 
-    start = datetime.datetime.now()
     _scores, recommended_articles_id = recommend_topk_from_titles(
         model=model,
         history_titles=[article['title'] for article in viewed_articles],
         candidate_titles=[article['title'] for article in candidates],
-        topk=10,
+        topk=page_size,
         device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
     )
-    end = datetime.datetime.now()
-    print(f" recommending time: {end - start}")
+
     interactions_service.record_many_recommended(
         user_id=user_id,
         article_ids=[candidates[i]['id'] for i in recommended_articles_id])

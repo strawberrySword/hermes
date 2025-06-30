@@ -8,10 +8,10 @@ from auth.service import auth_required
 PAGE_SIZE = 10
 
 
-@app.route('/api/articles/<category>', methods=['GET'])
+@app.route('/api/articles/<category>/<page_size>', methods=['GET'])
 @auth_required
-def get_some_articles(user_email, category):
-    return service.recommend(user_email, category), 200
+def get_some_articles(user_email, category, page_size):
+    return service.recommend(user_email, category, int(page_size)), 200
 
 
 @app.route('/api/article', methods=['GET'])

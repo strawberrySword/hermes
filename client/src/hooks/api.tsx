@@ -12,7 +12,7 @@ export type Article = {
   id: string;
 };
 
-export const useArticles = (topic: string) => {
+export const useArticles = (topic: string, pageSize: number = 10) => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
 
   return useInfiniteQuery({
@@ -22,9 +22,12 @@ export const useArticles = (topic: string) => {
         detailedResponse: true,
       });
 
-      const response = await axios.get<Article[]>(`api/articles/${topic}`, {
-        headers: { Authorization: `Bearer ${token.id_token}` },
-      });
+      const response = await axios.get<Article[]>(
+        `api/articles/${topic}/${pageSize}`,
+        {
+          headers: { Authorization: `Bearer ${token.id_token}` },
+        }
+      );
 
       return response.data;
     },

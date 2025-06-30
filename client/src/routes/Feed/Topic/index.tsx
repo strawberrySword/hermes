@@ -1,11 +1,21 @@
 import { useArticles } from "../../../hooks/api";
-import { Box, capitalize, Divider, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  capitalize,
+  Divider,
+  Stack,
+  Typography,
+  IconButton,
+} from "@mui/material";
 
 import SmallArticle from "../SmallArticle";
 import TopicSkeleton from "./TopicSkeleton";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { useState } from "react";
 
 const Topic = ({ topic }: { topic: string }) => {
-  const { data: articles, isLoading } = useArticles(topic);
+  const { data: articles, isLoading } = useArticles(topic, 5);
+  const [page, setPage] = useState()
   if (isLoading) {
     return <TopicSkeleton />;
   }
@@ -20,10 +30,20 @@ const Topic = ({ topic }: { topic: string }) => {
           background: "#201c1c",
         }}
       >
-        <Typography variant="h5">{capitalize(topic)}</Typography>
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="h5">{capitalize(topic)}</Typography>
+          <Box>
+            <IconButton>
+              <ChevronLeft />
+            </IconButton>
+            <IconButton>
+              <ChevronRight />
+            </IconButton>
+          </Box>
+        </Box>
         <Divider />
         {articles?.pages.map((page) =>
-          page.slice(0, 5).map((item) => (
+          page.map((item) => (
             <>
               <SmallArticle article={item} />
               <Divider />
