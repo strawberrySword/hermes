@@ -95,6 +95,90 @@ def recommend_topk_from_titles(
     return scores, topk_idxs.tolist()
 
 
+
+def recommend_topk_from_embeddings(
+    model: torch.nn.Module,
+    history_titles: List[str],
+    candidate_emb: torch.Tensor, # (B, K, d_embed_news)
+    topk: int = 5,
+    device: torch.device = torch.device("cpu")
+):
+    
+    model.to(device)
+    model.eval()
+
+    # 1. Tokenize history and candidates
+    hist_tokens, hist_mask = tokenize_titles(
+        history_titles, max_len=MAX_TITLE_LEN)
+
+    # 2. Pad history to MAX_HISTORY size
+    num_hist = len(history_titles)
+    if num_hist < MAX_HISTORY:
+        pad_len = MAX_HISTORY - num_hist
+        pad_tokens = torch.full((pad_len, MAX_TITLE_LEN),
+                                PAD_ID, dtype=torch.long)
+        pad_mask = torch.ones((pad_len, MAX_TITLE_LEN), dtype=torch.bool)
+        hist_tokens = torch.cat([pad_tokens, hist_tokens], dim=0)
+        hist_mask = torch.cat([pad_mask, hist_mask], dim=0)
+    elif num_hist > MAX_HISTORY:
+        hist_tokens = hist_tokens[-MAX_HISTORY:]
+        hist_mask = hist_mask[-MAX_HISTORY:]
+
+    # 3. Add batch dimension
+    clicked_ids = hist_tokens.unsqueeze(0).to(
+        device)    # (1, MAX_HISTORY, MAX_TITLE_LEN)
+    clicked_mask = hist_mask.unsqueeze(0).to(
+        device)     # (1, MAX_HISTORY, MAX_TITLE_LEN)
+
+    # 4. Forward pass
+    with torch.no_grad():
+        logits = model.forward_with_cand_embeddings(clicked_ids, clicked_mask,candidate_emb)  # (1, K)
+
+    scores = logits.squeeze(0)  # (K,)
+    topk_vals, topk_idxs = torch.topk(scores, k=min(topk, scores.size(0)))
+
+    return scores, topk_idxs.tolist()
+
+
+
+def calculate_candidate_embeddings(
+    model: torch.nn.Module,
+    candidate_titles: List[str],
+    device: torch.device = torch.device("cpu")
+) -> torch.Tensor:
+    """
+    Calculates embeddings for candidate articles using the NRMS model.
+
+    Args:
+        model:            Trained NRMS model.
+        candidate_titles: List of candidate article titles (strings).
+        device:           Torch device to run the model on.
+
+    Returns:
+        Tensor of shape (B, K, d_embed_news) containing embeddings for each candidate.
+    """
+    model.to(device)
+    model.eval()
+
+    # 1. Tokenize candidates
+    cand_tokens, cand_mask = tokenize_titles(
+        candidate_titles, max_len=MAX_TITLE_LEN)
+
+
+    # 3. Add batch dimension
+    cand_ids = cand_tokens.unsqueeze(0).to(
+        device)       # (1, K, MAX_TITLE_LEN)
+    cand_mask = cand_mask.unsqueeze(0).to(
+        device)        # (1, K, MAX_TITLE_LEN)
+
+    # 4. Forward pass
+    with torch.no_grad():
+         res = model.calc_news_emb(cand_ids, cand_mask)  # (B, K, d_embed_news)
+
+    return res
+
+
+
 CHECK_PATH = './article_recommender/checkpoints/checkpoint_epoch5.pt'
 
 
