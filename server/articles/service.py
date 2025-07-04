@@ -1,7 +1,7 @@
 import datetime
 from bson import ObjectId
 from flask import jsonify
-from article_recommender.model import load_model, recommend_topk_from_titles
+from article_recommender.model import load_model, recommend_topk_from_embeddings, recommend_topk_from_titles
 import articles.repository as repository
 import interactions.service as interactions_service
 import interactions.repository as interactions_repository
@@ -29,10 +29,11 @@ def recommend(user_id, topic, page_size):
 
     viewed_articles = repository.find_many(viewed_articles_ids)
 
-    _scores, recommended_articles_id = recommend_topk_from_titles(
+    _scores, recommended_articles_id = recommend_topk_from_embeddings(
         model=model,
         history_titles=[article['title'] for article in viewed_articles],
-        candidate_titles=[article['title'] for article in candidates],
+        candidate_emb=torch.tensor(
+            [article['embeddings'] for article in candidates]),
         topk=page_size,
         device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
     )
@@ -46,13 +47,7 @@ def recommend(user_id, topic, page_size):
 
 
 def get_top_topics(user_id):
-    interaction_data = interactions_repository.get_user_interaction_data(
-        user_id)
-    history = interaction_data["viewed_articles"]
-    if not history:
-        return jsonify([])
-    history_ids = [ObjectId(article['article_id']) for article in history]
-    return jsonify(repository.get_top_topics(history_ids))
+    return repository.get_top_topics(user_id)
 
 
 def get_some_articles():

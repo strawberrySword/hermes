@@ -1,4 +1,6 @@
-from db import interactions_collection
+from bson import ObjectId
+from sympy import true
+from db import interactions_collection, topic_interaction_collection, articles_collection
 from datetime import datetime, timedelta
 
 
@@ -8,6 +10,16 @@ def record_open(user_email, article_id):
     interactions_collection.update_one(
         {"user": user_email, "article_id": article_id},
         {"$set": {"last_opened": now, "is_opened": True}},
+        upsert=True
+    )
+
+    article = articles_collection.find_one({
+        "_id": ObjectId(article_id)
+    }, {"topic": 1})
+
+    topic_interaction_collection.update_one(
+        {"user": user_email, "topic": article["topic"]},
+        {"$inc": {"count": 1}},
         upsert=True
     )
 

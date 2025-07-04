@@ -1,0 +1,3 @@
+from article_recommender.model import calculate_candidate_embeddings
+
+

@@ -1,29 +1,30 @@
 import TinderCard from "react-tinder-card";
 import "./index.css";
-import { useRandomArticles, useRecordOpenedArticle } from "../../hooks/api";
+import {
+  useHistoryCount,
+  useRandomArticles,
+  useRecordOpenedArticle,
+} from "../../hooks/api";
 import { useQueryClient } from "@tanstack/react-query";
 import ArticleCard from "../Feed/Article";
 import { ThumbDown, ThumbUp } from "@mui/icons-material";
 import { Box, Button, Fab, Tooltip, withStyles } from "@mui/material";
-import { useState } from "react";
 import { useNavigate } from "react-router";
 
 type Direction = "right" | "left" | "up" | "down";
 
 function TinderCards() {
   const { data: article, isLoading } = useRandomArticles();
-  const [likedCount, setLikedCount] = useState(0);
+  const { data: likedCount } = useHistoryCount();
+  // const [likedCount, setLikedCount] = useState(0);
   const queryClient = useQueryClient();
   const { mutate: recordOpened } = useRecordOpenedArticle(article?.id);
   const navigate = useNavigate();
   const swiped = (direction: Direction) => {
     if (direction === "right") {
-      setLikedCount(likedCount + 1);
-      console.log(likedCount);
-
       recordOpened();
     }
-    queryClient.invalidateQueries({ queryKey: ["articles", "random"] });
+    queryClient.invalidateQueries();
   };
 
   if (isLoading) {
@@ -70,6 +71,7 @@ function TinderCards() {
         <span>
           <Button
             onClick={() => {
+              queryClient.invalidateQueries();
               navigate("/feed");
             }}
             disabled={likedCount < 5}

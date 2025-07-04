@@ -1,5 +1,5 @@
 from bson import ObjectId
-from db import articles_collection
+from db import articles_collection, topic_interaction_collection
 from datetime import datetime
 
 
@@ -7,18 +7,19 @@ def find_many(ids):
     """
     Find many articles by their ids
     """
-    return list(articles_collection.find({"_id": {"$in": ids}}, {"_id": 0}))
+    return list(articles_collection.find({"_id": {"$in": ids}}, {"_id": 0, "embeddings": 0}))
 
 
 def find_one(id):
-    return articles_collection.find_one({"article_id": id}, {"_id": 0})
+    return articles_collection.find_one({"article_id": id}, {"_id": 0, "embeddings": 0})
 
 
 def get_random(limit=10):
     """
     Get random articles
     """
-    return list(articles_collection.aggregate([{"$sample": {"size": limit}},
+    now = datetime.now()
+    return list(articles_collection.aggregate([{"$match": {"date": {"$lte": now}}}, {"$sample": {"size": limit}},
                                                {"$addFields": {
                                                    "id": {"$toString": "$_id"}
                                                }
@@ -32,6 +33,7 @@ def find_fresh(stale_articles, topic):
     """
     now = datetime.now()
     stale_ids = [ObjectId(article['article_id']) for article in stale_articles]
+    limit = 1000 if topic == "all" else 1000
     pipeline = [
         {"$match": {
             "_id": {"$nin": stale_ids},
@@ -40,22 +42,17 @@ def find_fresh(stale_articles, topic):
         {"$addFields": {"id": {"$toString": "$_id"}}},
         {"$project": {"_id": 0}},
         {"$sort": {"date": -1}},
-        {"$limit": 1000}
+        {"$limit": limit}
     ]
     if topic != "all":
         pipeline[0]["$match"]["topic"] = topic
     return list(articles_collection.aggregate(pipeline))
 
 
-def get_top_topics(article_ids):
+def get_top_topics(user_email):
     """
     Get top topics from a list of article ids.
     """
-    pipeline = [
-        {"$match": {"_id": {"$in": article_ids}}},
-        {"$group": {"_id": "$topic", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 3},
-        {"$project": {"_id": 0, "topic": "$_id", "count": 1}}
-    ]
-    return list(articles_collection.aggregate(pipeline))
+    top_topics = topic_interaction_collection.find(
+        {"user": user_email}, {"_id": 0, "embeddings": 0}).sort({"count": -1}).limit(6)
+    return list(top_topics)

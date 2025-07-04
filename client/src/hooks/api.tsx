@@ -12,6 +12,11 @@ export type Article = {
   id: string;
 };
 
+type Topic = {
+  topic: string;
+  count: number;
+};
+
 export const useArticles = (topic: string, pageSize: number = 10) => {
   const { getAccessTokenSilently, isAuthenticated } = useAuth0();
 
@@ -70,11 +75,32 @@ export const useTopics = () => {
         detailedResponse: true,
       });
 
-      const response = await axios.get<string[]>("api/articles/top-topics", {
+      const response = await axios.get<Topic[]>("api/articles/top-topics", {
         headers: { Authorization: `Bearer ${token.id_token}` },
       });
 
       return [...response.data.map((topic) => topic["topic"])];
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useHistoryCount = () => {
+  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+
+  return useQuery({
+    queryKey: ["topics"],
+    queryFn: async (): Promise<number> => {
+      const token = await getAccessTokenSilently({
+        detailedResponse: true,
+      });
+
+      const response = await axios.get<Topic[]>("api/articles/top-topics", {
+        headers: { Authorization: `Bearer ${token.id_token}` },
+      });
+
+      return response.data.reduce((total, topic) => total + topic["count"], 0);
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,

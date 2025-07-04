@@ -11,4 +11,5 @@ db = client["hermes"]
 user_collection = db["users"]
 articles_collection = db["articles"]
 interactions_collection = db["interactions"]
+topic_interaction_collection = db["topic_interactions"]
 print("Connected to MongoDB")

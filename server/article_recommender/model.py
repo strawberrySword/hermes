@@ -95,15 +95,14 @@ def recommend_topk_from_titles(
     return scores, topk_idxs.tolist()
 
 
-
 def recommend_topk_from_embeddings(
     model: torch.nn.Module,
     history_titles: List[str],
-    candidate_emb: torch.Tensor, # (B, K, d_embed_news)
+    candidate_emb: torch.Tensor,  # (K, d_embed_news)
     topk: int = 5,
     device: torch.device = torch.device("cpu")
 ):
-    
+
     model.to(device)
     model.eval()
 
@@ -132,13 +131,13 @@ def recommend_topk_from_embeddings(
 
     # 4. Forward pass
     with torch.no_grad():
-        logits = model.forward_with_cand_embeddings(clicked_ids, clicked_mask,candidate_emb)  # (1, K)
+        logits = model.forward_with_cand_embeddings(
+            clicked_ids, clicked_mask, candidate_emb.unsqueeze(0))  # (1, K)
 
     scores = logits.squeeze(0)  # (K,)
     topk_vals, topk_idxs = torch.topk(scores, k=min(topk, scores.size(0)))
 
     return scores, topk_idxs.tolist()
-
 
 
 def calculate_candidate_embeddings(
@@ -164,22 +163,20 @@ def calculate_candidate_embeddings(
     cand_tokens, cand_mask = tokenize_titles(
         candidate_titles, max_len=MAX_TITLE_LEN)
 
-
     # 3. Add batch dimension
-    cand_ids = cand_tokens.unsqueeze(0).to(
-        device)       # (1, K, MAX_TITLE_LEN)
-    cand_mask = cand_mask.unsqueeze(0).to(
-        device)        # (1, K, MAX_TITLE_LEN)
+    cand_ids = cand_tokens.to(
+        device)       # (K, MAX_TITLE_LEN)
+    cand_mask = cand_mask.to(
+        device)        # (K, MAX_TITLE_LEN)
 
     # 4. Forward pass
     with torch.no_grad():
-         res = model.calc_news_emb(cand_ids, cand_mask)  # (B, K, d_embed_news)
+        res = model.calc_news_emb(cand_ids, cand_mask)  # (B, K, d_embed_news)
 
     return res
 
 
-
-CHECK_PATH = './article_recommender/checkpoints/checkpoint_epoch5.pt'
+CHECK_PATH = './article_recommender/checkpoints/checkpoint_epoch2.pt'
 
 
 def load_model():

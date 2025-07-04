@@ -6,13 +6,16 @@ import { Box } from "@mui/material";
 import { useNavigate } from "react-router";
 
 const Feed = () => {
-  const { data: topics } = useTopics();
+  const { data: topics, isLoading } = useTopics();
   const navigate = useNavigate();
 
   if (topics?.length === 0) {
     navigate("/tinder");
   }
 
+  if (isLoading) {
+    return "Loading...";
+  }
   return (
     <>
       <Topnav />

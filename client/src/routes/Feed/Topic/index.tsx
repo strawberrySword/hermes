@@ -12,13 +12,20 @@ import SmallArticle from "../SmallArticle";
 import TopicSkeleton from "./TopicSkeleton";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { useState } from "react";
+import SmallArticlesSkeleton from "./SmallArticlesSkeleton";
 
 const Topic = ({ topic }: { topic: string }) => {
-  const { data: articles, isLoading } = useArticles(topic, 5);
-  const [page, setPage] = useState()
+  const {
+    data: articles,
+    isLoading,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useArticles(topic, 5);
+  const [page, setPage] = useState(0);
   if (isLoading) {
     return <TopicSkeleton />;
   }
+
   return (
     <Stack>
       <Box
@@ -34,16 +41,27 @@ const Topic = ({ topic }: { topic: string }) => {
           <Typography variant="h5">{capitalize(topic)}</Typography>
           <Box>
             <IconButton>
-              <ChevronLeft />
+              <ChevronLeft
+                onClick={() => {
+                  setPage(Math.max(page - 1, 0));
+                }}
+              />
             </IconButton>
-            <IconButton>
+            <IconButton
+              onClick={() => {
+                fetchNextPage();
+                setPage(page + 1);
+              }}
+            >
               <ChevronRight />
             </IconButton>
           </Box>
         </Box>
         <Divider />
-        {articles?.pages.map((page) =>
-          page.map((item) => (
+        {isFetchingNextPage ? (
+          <SmallArticlesSkeleton />
+        ) : (
+          articles?.pages[page].map((item) => (
             <>
               <SmallArticle article={item} />
               <Divider />

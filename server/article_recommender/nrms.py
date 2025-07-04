@@ -105,26 +105,21 @@ class NRMS(nn.Module):
         # logits (B, K)
         return torch.bmm(candidate_emb, user_emb.unsqueeze(2)).squeeze(2)
 
-
     def calc_news_emb(
             self,
             candidate_token_ids: torch.LongTensor,   # (B, K, L)
             candidate_token_mask: torch.BoolTensor   # (B, K, L)
     ) -> torch.Tensor:                           # returns (B,K, d_embed_news)
-        B, K, L = candidate_token_ids.shape
+        K, L = candidate_token_ids.shape
 
         # Flatten and encode candidate news
-        candidate_flat_ids = candidate_token_ids.view(B * K, L)
-        candidate_flat_mask = candidate_token_mask.view(B * K, L)
 
         candidate_emb_flat = self.news_encoder(
-            candidate_flat_ids, candidate_flat_mask)
+            candidate_token_ids, candidate_token_mask)
         candidate_emb = candidate_emb_flat.view(
-            B, K, self.d_embed_news)  # (B, K, d_embed_news)
+            K, self.d_embed_news)  # (K, d_embed_news)
 
         return candidate_emb
-
-
 
     def forward_with_cand_embeddings(
             self,

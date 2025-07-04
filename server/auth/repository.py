@@ -31,3 +31,13 @@ def create_user(user_data: dict):
     """
     user_collection.insert_one(user_data)
     print(f"User created: {user_data.get('email', 'Unknown Email')}")
+
+
+def upsert_one(user_data: dict):
+    user_collection.update_one(
+        {'email': user_data["email"]},
+        {'$setOnInsert':
+            user_data
+         },
+        upsert=True
+    )

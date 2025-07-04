@@ -53,8 +53,6 @@ def find_or_create_user(user_data: dict):
     """
     Find a user by their email, or create a new user if not found.
     """
-    user = repository.find_by_email(user_data['email'] or "")
     user_data = {key: user_data[key] for key in [
         "name", "given_name", "family_name", "nickname", "picture", "email"] if key in user_data}
-    if not user:
-        repository.create_user(user_data)
+    repository.upsert_one(user_data)

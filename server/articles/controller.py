@@ -22,7 +22,8 @@ def get_random_article():
 @app.route('/api/articles/top-topics', methods=['GET'])
 @auth_required
 def get_top_topics(user_email):
-    return service.get_top_topics(user_email), 200
+    res = service.get_top_topics(user_email)
+    return res, 200
 
 
 @app.route('/api/proxy')
