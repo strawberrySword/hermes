@@ -17,7 +17,7 @@ The project is a full-stack application with the following core components:
 
 - **Backend:** The server is a **Flask** application written in Python. It exposes a REST API for the frontend and handles user authentication, article recommendations, and database interactions.
 
-- **Machine Learning Model:** The recommendation engine is powered by a custom-built model using **PyTorch**. The model is trained on the [MIND dataset](https://msnews.github.io/) and uses a combination of collaborative filtering and content-based filtering techniques to generate personalized recommendations.
+- **Machine Learning Model:** The recommendation engine is powered by a custom-built model using **PyTorch**. The model is trained on the [MIND dataset](https://msnews.github.io/) and uses a content-based filtering technique to generate personalized recommendations.
 
 - **Database:** **MongoDB** is used as the primary database to store user data, articles, and interaction data.
 
