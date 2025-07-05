@@ -18,18 +18,17 @@ Additional data-related information:
 ## Technologies and Frameworks
 
 ### Frontend
-**SHAHAR FILL HERE**
-
-- **React** — for ...
-- **NiceGUI** — for ...
-- ...
+- **React & Vite** — Our frontend is a Single Page Application (SPA) built with `React` and `TypeScript`, bundled with `Vite` for a fast development experience.
+- **Routing** - We use `react-router` for client-side routing and navigation between different views.
+- **UI Components** — We leverage `Material UI (MUI)` for a consistent and modern design system, providing a rich set of pre-built components.
+- **State Management & Data Fetching** — We use `TanStack Query (React Query)` to manage server state, handle caching, and streamline data fetching from our backend API via `axios`.
+- **Authentication** — User authentication is handled using `Auth0`, providing a secure and robust login system.
 
 ### Backend
-**SHAHAR FILL HERE**
-
-- **Flask** — for ...
-- **FastAPI** — for ...
-- ...
+- **Flask** — A lightweight Python web framework used to build our REST API. It handles routing, requests, and responses.
+- **MongoDB** — We use MongoDB as our primary database, accessed via `PyMongo`. It stores user data, articles, and interaction history.
+- **Authentication** — Our API is secured using JSON Web Tokens (JWTs). The server validates tokens to protect routes and authorize user actions.
+- **Architecture** — The backend follows a layered architecture, separating concerns into controllers (handling HTTP requests), services (business logic), and repositories (data access).
 
 ### Algorithmic
 
@@ -40,10 +39,8 @@ Additional data-related information:
 - **Weights & Biases** - We make use of Weights&Biases to view our model's training curves/convergence plots, and to monitor the training of our model. Our plots are available [here](https://wandb.ai/the_magnivim/NRMS).
 
 ### Data Platforms
-**SHAHAR FILL HERE**
 
-- **MySQL** — for storing main user interactions...
-- **Redis** — for caching models and user interactions...
+- **MongoDB** — Our primary database for storing articles, user information, and interaction data. We use the `pymongo` library in our Python backend to interact with the database.
 
 ### AI
 
@@ -95,7 +92,3 @@ A brief summary of the key algorithms and features developed:
 - Another big feature left for the future is fine-grained clustering of articles; We plan on implementing clustering of articles into fine-grained recent events. We then plan to work with those clusters rather then the big topics 
 
 &nbsp;<br>
-
-## Additional Comments
-
-Any extra insights, difficulties, tricks, or interesting stories you want to share.
