@@ -72,15 +72,15 @@ A brief summary of the key algorithms and features developed:
 
 ## Development Evolution
 
-- **Milestone 1: Initial Prototype & NRMS Implementation:** The initial phase involved setting up the project structure and implementing the core recommendation algorithm, the Neural News Recommendation with Multi-Head Self-Attention (NRMS) model. This period was characterized by rapid development and experimentation, as evidenced by numerous "work in progress" commits.
+- **Milestone 1 (March-May 2025): Project Initialization and Core Model Development.** The project began with the initial repository setup in late March. The core of the application started to take shape in May with the establishment of the server structure and the first implementation of the Neural News Recommendation with Multi-Head Self-Attention (NRMS) model. This phase was defined by rapid prototyping and foundational work on the recommendation engine.
 
-- **Milestone 2: Zero-Shot Topic Classification:** We integrated a pre-trained model from HuggingFace 🤗 (`FacebookAI roberta-large-mnli`) to perform zero-shot classification of articles into topics. This allowed us to categorize news content without needing a custom-trained classifier, significantly speeding up the development of topic-based features.
+- **Milestone 2 (Late May - Early June 2025): NRMS Refinement and Training Infrastructure.** This period was dedicated to intensely developing and refining the NRMS model. Key advancements included building a robust training pipeline with a script-based trainer, implementing data loaders, and introducing critical training features like gradient clipping, a learning rate scheduler, and residual connections. The team established a systematic approach to model evaluation and checkpointing.
 
-- **Milestone 3: Performance Optimization with Caching:** As the system grew, we identified performance bottlenecks, particularly in the calculation of embeddings for news articles. To address this, we implemented a caching layer using Redis. This significantly improved the responsiveness of the recommendation engine by storing and reusing pre-computed embeddings, a crucial step learned from facing real-world latency issues.
+- **Milestone 3 (Mid-June 2025): News Fetching and Server Integration.** To ensure the content remained current, a news fetching pipeline was developed and integrated into the server. This marked a key transition from working with static datasets to handling live, incoming data, a critical step toward a real-world application.
 
-- **Milestone 4: Database Refinement:** For easier development, testing, and deployment, we transitioned to a smaller, more manageable database. This change, reflected in the "small db" commit, allowed for faster iteration cycles and simplified the data management process.
+- **Milestone 4 (Late June 2025): Topic Modeling and Advanced Classification.** The team introduced topic modeling to categorize articles. Initially, this was based on traditional methods, but it quickly evolved with the integration of a sophisticated zero-shot classification pipeline using a pre-trained model from HuggingFace 🤗. This allowed for dynamic and accurate topic assignment without the need for a custom-trained classifier.
 
-- **Milestone 5: Finalization and Documentation:** The final stage focused on polishing the codebase, removing unused files, and creating comprehensive documentation. This included updating the README and writing a detailed `summary.md` to provide a clear overview of the project's architecture, algorithms, and development process.
+- **Milestone 5 (Early July 2025): Performance Optimization and Finalization.** As the system matured, performance became a priority. A Redis caching layer was implemented to store and reuse article embeddings, significantly reducing latency. The database was streamlined for more efficient development and deployment. The final weeks were spent on documentation, code cleanup, and preparing the project for its final presentation.
 
 &nbsp;<br>
 
