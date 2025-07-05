@@ -42,19 +42,22 @@ The training of the NRMS model is handled in the `/model/NRMS/` directory.
 
 ### Server-Side Inference (`/server/article_recommender/`)
 
-The trained model is used to generate live recommendations in the server application.
+The trained model is used to generate live recommendations in the server application. To optimize performance, article embeddings are pre-computed and cached.
 
 - **`nrms.py`**: A copy of the model definition file is included here to reconstruct the model architecture during inference.
 - **`model.py`**: This file contains the logic for using the trained model in a production setting.
+    - **Embedding Caching**: Instead of computing article embeddings on-the-fly, a script (`calculate_embeddings.py`) is run periodically to process new articles. It uses the `NewsEncoder` part of the NRMS model to generate embeddings for article titles and stores them in the database.
     - **`load_model()`**: This function loads the pre-trained model weights from a saved checkpoint file (`checkpoint_epoch5.pt`).
-    - **`recommend_topk_from_titles()`**: This is the main function for generating recommendations. It takes a user's reading history (as a list of titles) and a list of candidate titles. It tokenizes the inputs, feeds them through the model to get scores, and returns the top-k recommended articles.
+    - **`recommend_topk_from_titles()`**: This is the main function for generating recommendations. It takes a user's reading history (as a list of titles) and a list of candidate articles. For the user's history, it generates user embedding on the fly. For candidate articles, it retrieves their pre-computed embeddings from the cache. It then calculates scores and returns the top-k recommended articles.
 
 ### End-to-End Flow
 
 1.  **Offline Training**: The NRMS model is trained on the MIND dataset to learn how to represent user interests and article content.
 2.  **Deployment**: The resulting trained model checkpoint is deployed with the server application.
-3.  **Online Inference**: When a user requests recommendations, the server:
+3.  **Embedding Caching**: A background process periodically calculates embeddings for new articles and stores them in a cache (e.g., a database).
+4.  **Online Inference**: When a user requests recommendations, the server:
     a. Retrieves the user's reading history.
-    b. Gathers a list of candidate articles.
-    c. Uses the loaded NRMS model to score and rank the candidates based on the user's history.
-    d. Returns the highest-ranked articles as personalized recommendations.
+    b. Gathers a list of candidate articles and fetches their pre-computed embeddings from the cache.
+    c. Uses the loaded NRMS model's `UserEncoder` to compute the user's embedding from their history.
+    d. Calculates the dot product between the user embedding and the cached candidate article embeddings to get scores.
+    e. Returns the highest-ranked articles as personalized recommendations.
