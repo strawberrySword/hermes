@@ -72,15 +72,15 @@ A brief summary of the key algorithms and features developed:
 
 ## Development Evolution
 
-Describe the main stages of your system development, major changes, and lessons learned.
+- **Milestone 1: Initial Prototype & NRMS Implementation:** The initial phase involved setting up the project structure and implementing the core recommendation algorithm, the Neural News Recommendation with Multi-Head Self-Attention (NRMS) model. This period was characterized by rapid development and experimentation, as evidenced by numerous "work in progress" commits.
 
-Example:
+- **Milestone 2: Zero-Shot Topic Classification:** We integrated a pre-trained model from HuggingFace 🤗 (`FacebookAI roberta-large-mnli`) to perform zero-shot classification of articles into topics. This allowed us to categorize news content without needing a custom-trained classifier, significantly speeding up the development of topic-based features.
 
-- **Milestone 1:** Initial prototype with basic search and static recommendations.
-- **Milestone 2:** Added collaborative filtering using PyTorch.
-- **Milestone 3:** Integrated OpenAI model for better item embeddings.
-- **Milestone 4:** Switched to Redis for faster caching.
-- **Milestone 5:** Improved search engine ranking using TF-IDF.
+- **Milestone 3: Performance Optimization with Caching:** As the system grew, we identified performance bottlenecks, particularly in the calculation of embeddings for news articles. To address this, we implemented a caching layer using Redis. This significantly improved the responsiveness of the recommendation engine by storing and reusing pre-computed embeddings, a crucial step learned from facing real-world latency issues.
+
+- **Milestone 4: Database Refinement:** For easier development, testing, and deployment, we transitioned to a smaller, more manageable database. This change, reflected in the "small db" commit, allowed for faster iteration cycles and simplified the data management process.
+
+- **Milestone 5: Finalization and Documentation:** The final stage focused on polishing the codebase, removing unused files, and creating comprehensive documentation. This included updating the README and writing a detailed `summary.md` to provide a clear overview of the project's architecture, algorithms, and development process.
 
 &nbsp;<br>
 
